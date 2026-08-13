@@ -1,0 +1,7 @@
+# Internal source material — deliberately NOT published.
+# Contains the original Word mockups with unresolved internal notes and
+# unconfirmed sponsor details, plus the full-resolution poster art.
+_source/
+
+.netlify/
+.DS_Store

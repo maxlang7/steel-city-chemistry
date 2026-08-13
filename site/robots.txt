@@ -1,0 +1,4 @@
+# REMOVE BEFORE LAUNCH — see the matching noindex meta tag in index.html.
+# Preview site: content is pending organizer approval and must not be indexed yet.
+User-agent: *
+Disallow: /
