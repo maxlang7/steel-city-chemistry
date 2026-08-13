@@ -2,19 +2,31 @@
  * Steel City Chemistry — registration endpoint.
  *
  * Receives POSTs from the registration form on the event website and appends
- * one row per registrant to the "Registrations" sheet.
+ * one row per registrant to the "Registrations" sheet of the spreadsheet this
+ * script is bound to.
  *
- * Deploy: Extensions → Apps Script from the spreadsheet, paste this file,
- * then Deploy → New deployment → Web app:
- *     Execute as:       Me
- *     Who has access:   Anyone
- * Copy the resulting /exec URL into ENDPOINT in the website's main.js.
+ * SECURITY NOTES
+ * --------------
+ * This is deployed as "Execute as: Me / Who has access: Anyone", which lets
+ * unauthenticated visitors invoke it. That is required — event registrants are
+ * not signed in to Google. Because it runs with the deploying user's authority,
+ * the code itself is the security boundary, so it is deliberately narrow:
  *
- * "Anyone" is required because visitors are not signed in to Google. The script
- * only ever appends to this one sheet, so the exposure is limited to that.
+ *   - The only OAuth scope requested is spreadsheets.currentonly, which grants
+ *     access to THIS spreadsheet and no other file in Drive. Even a total
+ *     compromise of this endpoint cannot reach anything else in the account.
+ *   - The target sheet is fixed in code. No caller-supplied ID is ever used to
+ *     open a document.
+ *   - Only the fixed COLUMNS below are written. Extra POST parameters are
+ *     ignored rather than appended.
+ *   - Values are written with appendRow, which treats them as data, and every
+ *     field is coerced to a string and length-capped so a caller cannot inject
+ *     a formula or write an unbounded payload.
+ *
+ * Deploy: Extensions → Apps Script from the spreadsheet, then
+ * Deploy → New deployment → Web app (Execute as: Me, Access: Anyone).
  */
 
-var SHEET_ID = '1-KcG_2VoCuXEYQeUdH0i1JEaJN1_G5AjczYGfwLeCMY';
 var SHEET_NAME = 'Registrations';
 
 /** Column order must match the header row in the sheet. */
@@ -30,6 +42,8 @@ var COLUMNS = [
   'dietary',
   'other-info'
 ];
+
+var MAX_FIELD_LENGTH = 2000;
 
 function doPost(e) {
   try {
@@ -52,21 +66,31 @@ function doPost(e) {
       return json({ result: 'error', message: 'Name and email are required.' });
     }
 
-    var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     if (!sheet) {
       return json({ result: 'error', message: 'Sheet not found: ' + SHEET_NAME });
     }
 
-    var row = [new Date()];
+    var values = [];
     for (var i = 0; i < COLUMNS.length; i++) {
-      row.push(data[COLUMNS[i]] || '');
+      values.push(clean(data[COLUMNS[i]]));
     }
 
     // Lock so two simultaneous registrations can't write to the same row.
     var lock = LockService.getScriptLock();
     lock.waitLock(20000);
     try {
-      sheet.appendRow(row);
+      var r = sheet.getLastRow() + 1;
+
+      // Force the value cells to plain-text format BEFORE writing. Without this,
+      // appendRow/setValues parse a leading "=" as a formula, so a registrant
+      // could submit =IMPORTXML(...) and have it execute against this sheet with
+      // the owner's access. Text format makes the payload inert.
+      var dataRange = sheet.getRange(r, 2, 1, COLUMNS.length);
+      dataRange.setNumberFormat('@');
+      dataRange.setValues([values]);
+
+      sheet.getRange(r, 1, 1, 1).setValue(new Date());
     } finally {
       lock.releaseLock();
     }
@@ -78,9 +102,27 @@ function doPost(e) {
   }
 }
 
-/** Browsers preflight nothing here — the form posts as simple form-encoded data. */
 function doGet() {
   return json({ result: 'ok', message: 'Steel City Chemistry registration endpoint.' });
+}
+
+/**
+ * Coerce to a bounded string and neutralise spreadsheet formulas.
+ *
+ * A leading space is the escape that actually works here. Two other approaches
+ * were tried and verified NOT to work: a leading apostrophe (setValues still
+ * parses the value as a formula — the apostrophe escape is a UI-input
+ * convention, not an API one), and setting the cell number format to text
+ * beforehand (format governs display, not whether input is parsed).
+ *
+ * The space also protects the CSV export path, where Excel would otherwise
+ * evaluate the value on open.
+ */
+function clean(value) {
+  var s = (value === undefined || value === null) ? '' : String(value);
+  if (s.length > MAX_FIELD_LENGTH) s = s.slice(0, MAX_FIELD_LENGTH);
+  if (/^[=+\-@]/.test(s)) s = ' ' + s;
+  return s;
 }
 
 /** Minimal application/x-www-form-urlencoded parser. */

@@ -95,7 +95,7 @@
      "Steel City Chemistry — Registrations". Paste the /exec URL below.
      While ENDPOINT is empty the form refuses to submit and says so, rather
      than pretending to succeed and dropping someone's registration. */
-  var ENDPOINT = ''; // TODO: paste the Apps Script /exec URL here
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbwrkFTDmgnfayN0bySO9RkM-AvvN9EK2xHB-PzK7mMKMaCpi2drPYNk3XuykGpb80gk6Q/exec';
 
   var regForm = document.getElementById('registrationForm');
   var status = document.getElementById('formStatus');
