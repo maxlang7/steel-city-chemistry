@@ -5,3 +5,5 @@ _source/
 
 .netlify/
 .DS_Store
+
+# clasp local project pointer (contains script id, not credentials)
