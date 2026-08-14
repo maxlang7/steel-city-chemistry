@@ -518,6 +518,23 @@ a { color: var(--navy-soft); }
 }
 .hp { position: absolute; left: -9999px; }
 
+/* "We filled this in for you" bar. Must be dismissible: shared and lab
+   machines mean the details on screen may belong to someone else. */
+.prefill {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .8rem;
+  background: var(--sky-pale); border: 1px solid var(--sky);
+  border-radius: var(--r); padding: .8rem 1rem; margin-bottom: 1.6rem;
+  font-size: .9rem; color: var(--navy);
+}
+.prefill__text { flex: 1; min-width: 12rem; }
+.prefill__clear {
+  font: inherit; font-size: .8rem; font-weight: 700;
+  color: var(--navy); background: var(--white);
+  border: 1.5px solid var(--sky); border-radius: 999px;
+  padding: .35rem .9rem; cursor: pointer;
+}
+.prefill__clear:hover { border-color: var(--navy); }
+
 .form__grid { display: grid; gap: 1.3rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 
 .field { margin: 0 0 1.5rem; }

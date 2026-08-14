@@ -235,8 +235,62 @@
     relabel();
   }
 
+  /* Prefill the first attendee from anything typed on the poster form earlier.
+     Only the registrant's own block — never the people they add, who are by
+     definition someone else. */
+  var LEVEL_TO_TYPE = {
+    'Graduate': 'Graduate Student',
+    'Undergraduate': 'Undergraduate Student',
+    'K-12': 'K-12 Student'
+  };
+
+  function prefillFirst(block) {
+    var saved = window.SCC && window.SCC.profile ? window.SCC.profile.load() : null;
+    if (!saved || (!saved.name && !saved.email)) return;
+
+    var set = function (selector, value) {
+      if (!value) return false;
+      var el = block.querySelector(selector);
+      if (!el || el.value) return false;
+      el.value = value;
+      return true;
+    };
+
+    var filled = false;
+    filled = set('[name$="_name"]', saved.name) || filled;
+    filled = set('[name$="_email"]', saved.email) || filled;
+    filled = set('[name$="_phone"]', saved.phone) || filled;
+    filled = set('[name$="_organization"]', saved.organization) || filled;
+
+    if (saved.acsMember) {
+      var radio = block.querySelector('.js-member[value="' + saved.acsMember + '"]');
+      if (radio) { radio.checked = true; filled = true; }
+    }
+
+    var type = saved.attendeeType || LEVEL_TO_TYPE[saved.level];
+    if (type) {
+      var select = block.querySelector('.js-type');
+      if (select && [].some.call(select.options, function (o) { return o.value === type; })) {
+        select.value = type;
+        filled = true;
+      }
+    }
+    if (saved.grade) set('[name$="_grade"]', saved.grade);
+
+    // Re-run the conditional logic now that member/type are populated.
+    block.querySelector('.js-type').dispatchEvent(new Event('change'));
+
+    if (filled && window.SCC.prefillBanner) {
+      window.SCC.prefillBanner(regForm, saved.name, function () {
+        regForm.reset();
+        block.querySelector('.js-type').dispatchEvent(new Event('change'));
+      });
+    }
+  }
+
   if (attendeeBox && template) {
-    addAttendee();                       // The registrant's own block.
+    var first = addAttendee();           // The registrant's own block.
+    if (first && regForm) prefillFirst(first);
     if (addBtn) addBtn.addEventListener('click', function () {
       var block = addAttendee();
       if (block) block.querySelector('input[type="text"]').focus();
@@ -277,6 +331,19 @@
       var payload = new URLSearchParams(new FormData(regForm));
       payload.set('group-id', groupId);
       payload.set('count', String(count));
+
+      // Remember the registrant's own details so the poster form can prefill.
+      if (window.SCC && window.SCC.profile) {
+        window.SCC.profile.save({
+          name: payload.get('a0_name'),
+          email: payload.get('a0_email'),
+          phone: payload.get('a0_phone'),
+          organization: payload.get('a0_organization'),
+          acsMember: payload.get('a0_acs-member'),
+          attendeeType: payload.get('a0_attendee-type'),
+          grade: payload.get('a0_grade')
+        });
+      }
 
       /* Apps Script redirects through a googleusercontent.com domain that does
          not send CORS headers, so the response is unreadable from here — hence
