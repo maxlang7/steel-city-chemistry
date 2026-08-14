@@ -97,9 +97,9 @@
      than pretending to succeed and dropping someone's registration. */
   var ENDPOINT = 'https://script.google.com/macros/s/AKfycbwrkFTDmgnfayN0bySO9RkM-AvvN9EK2xHB-PzK7mMKMaCpi2drPYNk3XuykGpb80gk6Q/exec';
 
-  /* Flat fee per attendee, in USD. Keep in step with REGISTRATION_FEE in
-     apps-script/Code.gs — the sheet records what the site quoted. */
-  var FEE = 0; // TODO: confirm the registration fee with Ronghong
+  /* Flat fee per attendee, in USD, refundable upon attendance. Keep in step
+     with REGISTRATION_FEE in apps-script/Code.gs and FEE in payment.js. */
+  var FEE = 10;
 
   var regForm = document.getElementById('registrationForm');
   var status = document.getElementById('formStatus');

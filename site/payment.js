@@ -1,23 +1,14 @@
 /* Steel City Chemistry — confirmation page: reference code + PayPal handoff.
-   No dependencies. */
+   No dependencies, no external SDK. */
 (function () {
   'use strict';
 
-  /* ------------------------------------------------------------------
-     CONFIGURE THESE TWO, then payment switches on automatically.
-
-     PAYPAL_BUSINESS — the ACS Pittsburgh Local Section's PayPal account
-       (its email address, or its secure merchant ID). This should be the
-       SECTION's account, not a personal one: event income landing in a
-       personal account creates tax and bookkeeping problems.
-
-     FEE — flat registration fee per attendee, in USD. Must match FEE in
-       main.js and REGISTRATION_FEE in apps-script/Code.gs.
-     ------------------------------------------------------------------ */
-  var PAYPAL_BUSINESS = '';   // TODO: section PayPal account
-  var FEE = 0;                // TODO: confirm fee
-
-  var CURRENCY = 'USD';
+  /* PayPal no-code payment link for the ACS Pittsburgh Local Section.
+     $10 per attendee, refundable upon attendance. The buyer sets the quantity
+     on PayPal's own page — these links accept no pass-through parameters, so
+     neither the quantity nor the registration reference can be prefilled. */
+  var PAYPAL_LINK = 'https://www.paypal.com/ncp/payment/MP4EYJW6RC3LQ';
+  var FEE = 10;
 
   var params = new URLSearchParams(window.location.search);
   var group = (params.get('g') || '').slice(0, 32);
@@ -27,80 +18,47 @@
 
   /* ---------- reference code ---------- */
   if (group) {
-    var box = document.getElementById('refBox');
     document.getElementById('refCode').textContent = group;
     document.getElementById('refPeople').textContent =
       count === 1
         ? 'Covers 1 attendee.'
         : 'Covers ' + count + ' attendees registered together.';
-    box.hidden = false;
+    document.getElementById('refBox').hidden = false;
   }
 
   /* ---------- payment ---------- */
   var payBox = document.getElementById('payBox');
   if (!payBox) return;
 
-  if (!PAYPAL_BUSINESS || !FEE) {
-    payBox.innerHTML =
-      '<p class="paybox__pending">' +
-      'Payment details will be emailed to you shortly. Your place is recorded ' +
-      'and we will confirm once payment is received.' +
-      '</p>';
-    return;
-  }
-
-  var total = (count * FEE).toFixed(2);
-
-  /* PayPal's hosted-button POST. Quantity multiplies the flat per-person fee,
-     and the group reference travels in both item_number and custom so it shows
-     up in the transaction record and in PayPal's CSV export — that is what
-     makes a later refund findable. */
-  var form = document.createElement('form');
-  form.action = 'https://www.paypal.com/cgi-bin/webscr';
-  form.method = 'post';
-  form.target = '_top';
-  form.className = 'paybox__form';
-
-  var fields = {
-    cmd: '_xclick',
-    business: PAYPAL_BUSINESS,
-    item_name: 'Steel City Chemistry registration — ' + group,
-    item_number: group,
-    custom: group,
-    amount: FEE.toFixed(2),
-    quantity: String(count),
-    currency_code: CURRENCY,
-    no_shipping: '1',
-    rm: '1',
-    return: window.location.origin + window.location.pathname.replace(/thanks\.html$/, 'paid.html'),
-    cancel_return: window.location.href
+  var total = count * FEE;
+  var esc = function (s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
   };
 
-  Object.keys(fields).forEach(function (k) {
-    var input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = k;
-    input.value = fields[k];
-    form.appendChild(input);
-  });
-
-  var btn = document.createElement('button');
-  btn.type = 'submit';
-  btn.className = 'btn btn--gold';
-  btn.textContent = 'Pay $' + total + ' with PayPal';
-  form.appendChild(btn);
+  /* The quantity instruction is the part people get wrong, so it leads. */
+  var quantityLine = count === 1
+    ? 'Leave the quantity set to <strong>1</strong>.'
+    : 'On the PayPal page, set the quantity to <strong>' + count + '</strong> ' +
+      '— one for each person you registered.';
 
   payBox.innerHTML =
+    '<h2 class="paybox__head">Complete your registration</h2>' +
     '<p class="paybox__amount">' +
-    count + (count === 1 ? ' attendee' : ' attendees') +
-    ' × $' + FEE.toFixed(2) + ' = <strong>$' + total + '</strong>' +
+      count + (count === 1 ? ' attendee' : ' attendees') +
+      ' × $' + FEE + ' = <strong>$' + total + '</strong>' +
+    '</p>' +
+    '<p class="paybox__qty">' + quantityLine + '</p>' +
+    '<form action="' + esc(PAYPAL_LINK) + '" method="post" target="_blank" class="paybox__form">' +
+      '<button type="submit" class="btn btn--gold">Pay $' + total + ' with PayPal</button>' +
+    '</form>' +
+    '<p class="paybox__note">' +
+      'You can pay by card without a PayPal account. ' +
+      '<strong>Please pay using the same email address you registered with</strong> — ' +
+      'that is how we match your payment to your registration.' +
+    '</p>' +
+    '<p class="paybox__note paybox__note--refund">' +
+      'The $10 is a deposit and is refunded to you after you attend.' +
     '</p>';
-  payBox.appendChild(form);
-
-  var note = document.createElement('p');
-  note.className = 'paybox__note';
-  note.textContent =
-    'You can pay by card without a PayPal account. If your institution requires ' +
-    'an invoice or purchase order, ignore this and we will be in touch.';
-  payBox.appendChild(note);
 })();

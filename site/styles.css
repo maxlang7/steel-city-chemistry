@@ -650,10 +650,26 @@ a { color: var(--navy-soft); }
 .refbox__note { font-size: .87rem; color: var(--ink-soft); margin-bottom: .4rem; }
 .refbox__note:last-child { margin-bottom: 0; }
 
-.paybox { margin: 2rem auto; max-width: 34rem; }
-.paybox__amount { font-size: 1.1rem; color: var(--ink-soft); margin-bottom: 1rem; }
+.paybox {
+  margin: 2rem auto; max-width: 34rem; padding: 1.8rem;
+  background: var(--white); border: 2px solid var(--gold);
+  border-radius: var(--r); box-shadow: var(--shadow);
+}
+.paybox__head {
+  font-family: var(--font-display);
+  font-size: 1.25rem; font-weight: 800; color: var(--navy);
+  margin-bottom: .6rem;
+}
+.paybox__amount { font-size: 1.1rem; color: var(--ink-soft); margin-bottom: .8rem; }
 .paybox__amount strong { color: var(--navy); font-size: 1.3rem; }
-.paybox__note { font-size: .85rem; color: var(--ink-soft); margin-top: 1rem; }
+.paybox__qty {
+  background: var(--sky-pale); border-left: 3px solid var(--gold);
+  padding: .8rem 1rem; border-radius: 0 6px 6px 0;
+  font-size: .95rem; color: var(--ink); margin-bottom: 1.2rem;
+}
+.paybox__form { margin-bottom: 0; }
+.paybox__note { font-size: .85rem; color: var(--ink-soft); margin: 1rem 0 0; }
+.paybox__note--refund { font-weight: 600; color: var(--navy); }
 .paybox__pending {
   background: var(--sky-pale); border-left: 3px solid var(--sky);
   padding: .9rem 1.1rem; border-radius: 0 6px 6px 0;

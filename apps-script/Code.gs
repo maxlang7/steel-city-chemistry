@@ -24,8 +24,8 @@
 
 var SHEET_NAME = 'Registrations';
 
-/** Flat registration fee per attendee, in USD. TODO: confirm with Ronghong. */
-var REGISTRATION_FEE = 0;
+/** Flat registration fee per attendee, in USD. Refundable upon attendance. */
+var REGISTRATION_FEE = 10;
 
 /** Per-attendee fields, in sheet column order (after the group columns). */
 var ATTENDEE_FIELDS = [
@@ -71,7 +71,6 @@ function doPost(e) {
 
     var groupId  = clean(data['group-id']);
     var payer    = clean(data['a0_name']);
-    var invoice  = data['invoice'] ? 'Yes' : 'No';
     var other    = clean(data['other-info']);
     var stamp    = new Date();
 
@@ -86,7 +85,6 @@ function doPost(e) {
       }
       row.push(i === 0 ? other : '');           // Other info: once per group.
       row.push(payer);                           // Paid by
-      row.push(invoice);                         // Invoice requested
       row.push(String(REGISTRATION_FEE));        // Amount due
       row.push('Unpaid');                        // Payment status
       rows.push(row);
