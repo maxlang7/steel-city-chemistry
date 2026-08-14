@@ -1,33 +1,36 @@
 /**
- * Steel City Chemistry — registration endpoint.
+ * Steel City Chemistry — form endpoint.
  *
- * Receives POSTs from the registration form on the event website and appends
- * ONE ROW PER ATTENDEE to the "Registrations" sheet. A single submission may
- * cover several people (someone registering colleagues or students), in which
- * case every row shares a Group ID and names the same payer. That is what makes
- * a payment reconcilable: the PayPal transaction carries the Group ID, and the
- * sheet holds full details for each individual it covers.
+ * Handles two forms, distinguished by the `form` parameter:
+ *
+ *   form=registration → one row per attendee on the "Registrations" sheet.
+ *     A submission may cover several people; every row shares a Group ID and
+ *     names the same payer, so a single PayPal payment reconciles against the
+ *     group while catering detail stays per person.
+ *
+ *   form=poster → one row on the "Posters" sheet per abstract submitted.
  *
  * SECURITY NOTES
  * --------------
  * Deployed as "Execute as: Me / Who has access: Anyone", which is required —
- * event registrants are not signed in to Google. Because it runs with the
- * deploying user's authority, the code is the security boundary:
+ * registrants are not signed in to Google. Because it runs with the deploying
+ * user's authority, the code is the security boundary:
  *
  *   - Only scope requested is spreadsheets.currentonly: this spreadsheet and
- *     nothing else in Drive. The target sheet is fixed in code; no
- *     caller-supplied ID is ever used to open a document.
+ *     nothing else in Drive. Sheet names are fixed in code; no caller-supplied
+ *     ID is ever used to open a document.
  *   - Only the fixed columns below are written; extra POST params are ignored.
  *   - Every value is coerced to a bounded string and formula-escaped.
  *   - MAX_ATTENDEES caps how much one request can write.
  */
 
-var SHEET_NAME = 'Registrations';
+var REGISTRATION_SHEET = 'Registrations';
+var POSTER_SHEET = 'Posters';
 
 /** Flat registration fee per attendee, in USD. Refundable upon attendance. */
 var REGISTRATION_FEE = 10;
 
-/** Per-attendee fields, in sheet column order (after the group columns). */
+/** Per-attendee registration fields, in sheet column order. */
 var ATTENDEE_FIELDS = [
   'name',
   'email',
@@ -35,19 +38,33 @@ var ATTENDEE_FIELDS = [
   'organization',
   'acs-member',
   'attendee-type',
-  'breakfast',
-  'lunch',
-  'dietary'
+  'grade',
+  'recent-grad',
+  'grad-year'
 ];
 
-var MAX_FIELD_LENGTH = 2000;
+/** Poster fields, in sheet column order (after the submission id). */
+var POSTER_FIELDS = [
+  'name',
+  'email',
+  'acs-member',
+  'member-id',
+  'institution',
+  'level',
+  'grade',
+  'advisor',
+  'category',
+  'abstract'
+];
+
+var MAX_FIELD_LENGTH = 5000;   // Abstracts need more room than a name.
 var MAX_ATTENDEES = 25;
 
 function doPost(e) {
   try {
     var data = (e && e.parameter) ? e.parameter : {};
 
-    if (!data['a0_name'] && e && e.postData && e.postData.contents) {
+    if (!data.form && e && e.postData && e.postData.contents) {
       data = parseQuery(e.postData.contents);
     }
 
@@ -56,73 +73,106 @@ function doPost(e) {
       return json({ result: 'ok' });   // Silently accept, do not record.
     }
 
-    var count = parseInt(data.count, 10);
-    if (isNaN(count) || count < 1) count = 1;
-    if (count > MAX_ATTENDEES) count = MAX_ATTENDEES;
-
-    if (!data['a0_name'] || !data['a0_email']) {
-      return json({ result: 'error', message: 'Name and email are required.' });
-    }
-
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    if (!sheet) {
-      return json({ result: 'error', message: 'Sheet not found: ' + SHEET_NAME });
-    }
-
-    var groupId  = clean(data['group-id']);
-    var payer    = clean(data['a0_name']);
-    var other    = clean(data['other-info']);
-    var stamp    = new Date();
-
-    var rows = [];
-    for (var i = 0; i < count; i++) {
-      // Skip blank attendee blocks left behind in the form.
-      if (!data['a' + i + '_name']) continue;
-
-      var row = [groupId, String(i + 1)];
-      for (var f = 0; f < ATTENDEE_FIELDS.length; f++) {
-        row.push(clean(data['a' + i + '_' + ATTENDEE_FIELDS[f]]));
-      }
-      row.push(i === 0 ? other : '');           // Other info: once per group.
-      row.push(payer);                           // Paid by
-      row.push(String(REGISTRATION_FEE));        // Amount due
-      row.push('Unpaid');                        // Payment status
-      rows.push(row);
-    }
-
-    if (!rows.length) {
-      return json({ result: 'error', message: 'No valid attendees submitted.' });
-    }
-
-    var lock = LockService.getScriptLock();
-    lock.waitLock(20000);
-    try {
-      var r = sheet.getLastRow() + 1;
-
-      // Force value cells to text BEFORE writing. Without this, setValues parses
-      // a leading "=" as a formula, so a registrant could submit =IMPORTXML(...)
-      // and have it execute against this sheet with the owner's access.
-      var dataRange = sheet.getRange(r, 2, rows.length, rows[0].length);
-      dataRange.setNumberFormat('@');
-      dataRange.setValues(rows);
-
-      // Timestamp column, same value for every row in the group.
-      var stamps = [];
-      for (var s = 0; s < rows.length; s++) stamps.push([stamp]);
-      sheet.getRange(r, 1, rows.length, 1).setValues(stamps);
-    } finally {
-      lock.releaseLock();
-    }
-
-    return json({ result: 'ok', group: groupId, attendees: rows.length });
+    return (data.form === 'poster') ? handlePoster(data) : handleRegistration(data);
 
   } catch (err) {
     return json({ result: 'error', message: String(err) });
   }
 }
 
+function handleRegistration(data) {
+  var count = parseInt(data.count, 10);
+  if (isNaN(count) || count < 1) count = 1;
+  if (count > MAX_ATTENDEES) count = MAX_ATTENDEES;
+
+  if (!data['a0_name'] || !data['a0_email']) {
+    return json({ result: 'error', message: 'Name and email are required.' });
+  }
+
+  var sheet = sheetByName(REGISTRATION_SHEET);
+  if (!sheet) return json({ result: 'error', message: 'Sheet not found.' });
+
+  var groupId = clean(data['group-id']);
+  var payer   = clean(data['a0_name']);
+  var other   = clean(data['other-info']);
+
+  var rows = [];
+  for (var i = 0; i < count; i++) {
+    if (!data['a' + i + '_name']) continue;   // Skip blank blocks.
+
+    var row = [groupId, String(i + 1)];
+    for (var f = 0; f < ATTENDEE_FIELDS.length; f++) {
+      row.push(clean(data['a' + i + '_' + ATTENDEE_FIELDS[f]]));
+    }
+    row.push(clean(data['a' + i + '_breakfast']));
+    row.push(clean(data['a' + i + '_lunch']));
+    row.push(clean(data['a' + i + '_dietary']));
+    row.push(i === 0 ? other : '');            // Other info: once per group.
+    row.push(payer);
+    row.push(String(REGISTRATION_FEE));
+    row.push('Unpaid');
+    rows.push(row);
+  }
+
+  if (!rows.length) {
+    return json({ result: 'error', message: 'No valid attendees submitted.' });
+  }
+
+  appendRows(sheet, rows);
+  return json({ result: 'ok', group: groupId, attendees: rows.length });
+}
+
+function handlePoster(data) {
+  if (!data.name || !data.email || !data.abstract) {
+    return json({ result: 'error', message: 'Name, email and abstract are required.' });
+  }
+
+  var sheet = sheetByName(POSTER_SHEET);
+  if (!sheet) return json({ result: 'error', message: 'Sheet not found.' });
+
+  var row = [clean(data['submission-id'])];
+  for (var f = 0; f < POSTER_FIELDS.length; f++) {
+    row.push(clean(data[POSTER_FIELDS[f]]));
+  }
+  row.push('Received');
+
+  appendRows(sheet, [row]);
+  return json({ result: 'ok', submission: clean(data['submission-id']) });
+}
+
+/**
+ * Append rows with a timestamp in column A.
+ *
+ * Value cells are forced to text format BEFORE writing. Without this,
+ * setValues parses a leading "=" as a formula, so a submitter could send
+ * =IMPORTXML(...) and have it execute against this sheet with the owner's
+ * access. The lock stops two simultaneous submissions writing the same row.
+ */
+function appendRows(sheet, rows) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var r = sheet.getLastRow() + 1;
+    var stamp = new Date();
+
+    var dataRange = sheet.getRange(r, 2, rows.length, rows[0].length);
+    dataRange.setNumberFormat('@');
+    dataRange.setValues(rows);
+
+    var stamps = [];
+    for (var s = 0; s < rows.length; s++) stamps.push([stamp]);
+    sheet.getRange(r, 1, rows.length, 1).setValues(stamps);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function sheetByName(name) {
+  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+}
+
 function doGet() {
-  return json({ result: 'ok', message: 'Steel City Chemistry registration endpoint.' });
+  return json({ result: 'ok', message: 'Steel City Chemistry form endpoint.' });
 }
 
 /**

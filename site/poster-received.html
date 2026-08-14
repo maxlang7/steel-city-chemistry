@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abstract received — Steel City Chemistry</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="announce">
+  <span class="announce__mark">ACS150</span>
+  An ACS150 Anniversary Celebration · Saturday, October 3, 2026
+</div>
+
+<main class="thanks">
+  <div class="wrap wrap--narrow">
+    <span class="thanks__check" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><path d="M14 25l7 7 14-16" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+
+    <h1>Abstract received.</h1>
+    <p class="thanks__lede">
+      Thank you for submitting a poster abstract for
+      <strong>Steel City Chemistry: Past, Present, and Future</strong>.
+      We’ll be in touch with acceptance details, poster format, and the judging schedule.
+    </p>
+
+    <div class="refbox" id="refBox" hidden>
+      <p class="refbox__label">Your submission reference</p>
+      <p class="refbox__code" id="refCode"></p>
+      <p class="refbox__note">Quote this reference in any correspondence about your abstract.</p>
+    </div>
+
+    <p class="note note--center">
+      Presenting a poster does not register you for the event — please
+      <a href="register.html">register separately</a> so we have you in the headcount.
+    </p>
+
+    <p class="thanks__btns">
+      <a class="btn btn--gold" href="register.html">Register for the event</a>
+      <a class="btn btn--ghost btn--ghost-dark" href="index.html">Back to the event page</a>
+    </p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap site-footer__inner">
+    <div class="site-footer__brand">
+      <p class="site-footer__title">Steel City Chemistry</p>
+      <p class="site-footer__sub">Past, Present, and Future · Bridging Academia, Industry, and Community in Pittsburgh</p>
+      <p class="site-footer__org">Presented by the ACS Pittsburgh Local Section</p>
+    </div>
+  </div>
+  <p class="site-footer__tags">#SteelCityChemistry · #ACS150</p>
+</footer>
+
+<script>
+  (function () {
+    var id = (new URLSearchParams(location.search).get('s') || '').slice(0, 32);
+    if (!id) return;
+    document.getElementById('refCode').textContent = id;
+    document.getElementById('refBox').hidden = false;
+  })();
+</script>
+</body>
+</html>

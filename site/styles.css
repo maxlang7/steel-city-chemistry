@@ -84,6 +84,21 @@ a { color: var(--navy-soft); }
   letter-spacing: .1em;
   margin-right: .5rem;
 }
+.announce__links { margin-left: 1rem; }
+.announce__links a {
+  color: #fff; text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,.4);
+  margin-left: 1rem; padding-bottom: 1px;
+}
+.announce__links a:hover { color: var(--gold); border-color: var(--gold); }
+@media (max-width: 620px) {
+  .announce__links { display: block; margin: .4rem 0 0; }
+  .announce__links a:first-child { margin-left: 0; }
+}
+
+/* Simple header nav on the form pages — no sticky CTA, no scroll-spy. */
+.nav--simple { position: static; display: flex; }
+.nav--simple .nav__list { display: flex; gap: 1.4rem; }
 
 .site-header {
   position: sticky; top: 0; z-index: 100;
@@ -265,17 +280,17 @@ a { color: var(--navy-soft); }
 
 .section__title {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3.6vw, 2.5rem);
-  font-weight: 800; letter-spacing: -.015em;
+  font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+  font-weight: 800; letter-spacing: -.01em;
   color: var(--navy);
-  max-width: 22ch;
+  max-width: 30ch;
   margin-bottom: .5em;
 }
-.lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 68ch; }
-.lede--sm { font-size: 1rem; }
+.lede { font-size: 1.02rem; color: var(--ink-soft); max-width: 68ch; }
+.lede--sm { font-size: .95rem; }
 .h-sub {
   font-family: var(--font-display);
-  font-size: 1.22rem; font-weight: 800; color: var(--navy);
+  font-size: 1.05rem; font-weight: 800; color: var(--navy);
   letter-spacing: -.005em;
 }
 .h-sub--center { text-align: center; margin-top: 3.5rem; margin-bottom: 1.6rem; }
@@ -725,6 +740,34 @@ a { color: var(--navy-soft); }
   border-radius: var(--r); padding: 1.7rem;
 }
 .opp--feature { border-color: var(--gold); border-width: 2px; }
+
+/* Four sponsorship tiers, weighted by level. */
+.opps--tiers { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.opp--platinum { border-color: var(--navy); border-width: 2px; background: linear-gradient(180deg, #f6f9fc 0%, var(--white) 60%); }
+.opp--gold     { border-color: var(--gold); border-width: 2px; }
+.opp--silver   { border-color: #b9c4cd; }
+.opp--bronze   { border-color: #d3b08c; }
+.opp--platinum .opp__label { color: var(--navy); }
+.opp--gold .opp__label     { color: var(--gold-deep); }
+.opp--silver .opp__label   { color: #6b7885; }
+.opp--bronze .opp__label   { color: #9a6b3f; }
+.opp__label {
+  font-family: var(--font-display);
+  font-size: .8rem; font-weight: 800;
+  letter-spacing: .16em; text-transform: uppercase;
+}
+
+.tier__label--silver { color: #6b7885; }
+.tier__label--bronze { color: #9a6b3f; }
+.logos--bronze .logo { min-width: 150px; min-height: 76px; }
+.logos--bronze .logo span { font-size: .92rem; }
+.logo--empty {
+  border-style: dashed; box-shadow: none; background: transparent;
+}
+.logo--empty span { color: var(--ink-soft); font-weight: 600; }
+
+.ticks--wide li { font-size: 1rem; }
+.note--center { max-width: 46ch; margin-inline: auto; text-align: left; }
 .opp__label {
   font-size: .66rem; font-weight: 800; letter-spacing: .13em;
   text-transform: uppercase; color: var(--gold-deep); margin-bottom: .5rem;

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Submit a Poster — Steel City Chemistry | ACS Pittsburgh</title>
+<meta name="description" content="Submit a student poster abstract for Steel City Chemistry, an ACS150 anniversary celebration at the University of Pittsburgh, October 3, 2026.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="announce">
+  <span class="announce__mark">ACS150</span>
+  An ACS150 Anniversary Celebration · Saturday, October 3, 2026
+  <span class="announce__links">
+    <a href="https://pittsburghacs.org" target="_blank" rel="noopener">ACS Pittsburgh</a>
+    <a href="https://www.acs.org" target="_blank" rel="noopener">ACS National</a>
+  </span>
+</div>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="index.html">
+      <picture>
+        <source srcset="assets/img/acs-logo.webp" type="image/webp">
+        <img src="assets/img/acs-logo.png" alt="American Chemical Society" width="180" height="60" class="brand__logo">
+      </picture>
+      <span class="brand__section">Pittsburgh<br>Local Section</span>
+    </a>
+    <nav class="nav nav--simple" aria-label="Primary">
+      <ul class="nav__list">
+        <li><a href="index.html">Event home</a></li>
+        <li><a href="register.html">Register</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<section class="section section--form">
+  <div class="wrap wrap--narrow">
+    <p class="eyebrow">Student posters</p>
+    <h1 class="section__title">Submit a poster abstract</h1>
+    <p class="lede">
+      Graduate, undergraduate, and high school students are invited to present research during
+      the poster sessions on Saturday, October&nbsp;3. Fields marked
+      <span class="req-key">*</span> are required.
+    </p>
+
+    <ul class="ticks ticks--wide">
+      <li>Poster viewing during lunch and the afternoon break</li>
+      <li>Dedicated judging period: 3:30 – 4:30 PM</li>
+      <li>Awards announced before closing remarks</li>
+      <li>The first 50 accepted presenters receive a complimentary one-year ACS membership</li>
+    </ul>
+
+    <!-- PENDING: abstract deadline, poster size/format, judging criteria, award details -->
+    <p class="note">
+      Abstract deadline, poster size and format, and award details will be announced shortly.
+      Submitting now reserves your place in the session.
+    </p>
+
+    <form id="posterForm" name="poster" method="POST" class="form">
+      <noscript>
+        <p class="form__status form__status--error">
+          This form needs JavaScript enabled. Please enable it, or contact the organizers to submit by email.
+        </p>
+      </noscript>
+
+      <input type="hidden" name="form" value="poster">
+      <p class="hp" hidden aria-hidden="true">
+        <label>Leave this field empty <input name="company-website" tabindex="-1" autocomplete="off"></label>
+      </p>
+
+      <div class="form__grid">
+        <p class="field">
+          <label for="p-name">Full name <span class="req">*</span></label>
+          <input id="p-name" name="name" type="text" required autocomplete="name">
+        </p>
+        <p class="field">
+          <label for="p-email">Email address <span class="req">*</span></label>
+          <input id="p-email" name="email" type="email" required autocomplete="email">
+        </p>
+      </div>
+
+      <p class="field">
+        <label for="p-institution">Institution or school <span class="req">*</span></label>
+        <input id="p-institution" name="institution" type="text" required autocomplete="organization">
+      </p>
+
+      <fieldset class="field field--group">
+        <legend>Are you an ACS member? <span class="req">*</span></legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="acs-member" value="Yes" id="p-member-yes" required> Yes</label>
+          <label class="choice"><input type="radio" name="acs-member" value="No" id="p-member-no"> No</label>
+        </div>
+      </fieldset>
+
+      <p class="field" id="p-memberid-field" hidden>
+        <label for="p-memberid">ACS member ID</label>
+        <input id="p-memberid" name="member-id" type="text" inputmode="numeric">
+      </p>
+
+      <p class="field">
+        <label for="p-level">Which are you? <span class="req">*</span></label>
+        <select id="p-level" name="level" required>
+          <option value="" selected disabled>Please select…</option>
+          <option>Graduate</option>
+          <option>Undergraduate</option>
+          <option>K-12</option>
+        </select>
+      </p>
+
+      <p class="field" id="p-grade-field" hidden>
+        <label for="p-grade">What grade are you in? <span class="req">*</span></label>
+        <input id="p-grade" name="grade" type="text" inputmode="numeric">
+      </p>
+
+      <p class="field">
+        <label for="p-advisor">PI or faculty advisor <span class="req">*</span></label>
+        <input id="p-advisor" name="advisor" type="text" required>
+        <span class="field__hint">For K-12 submissions, your teacher or mentor.</span>
+      </p>
+
+      <p class="field">
+        <label for="p-category">Poster category <span class="req">*</span></label>
+        <select id="p-category" name="category" required>
+          <option value="" selected disabled>Choose one…</option>
+          <option>Organic</option>
+          <option>Inorganic</option>
+          <option>Physical</option>
+          <option>Computational</option>
+          <option>Analytical</option>
+          <option>Other (Materials, Environmental, Polymers, Catalysis, etc.)</option>
+        </select>
+      </p>
+
+      <p class="field">
+        <label for="p-abstract">Abstract <span class="req">*</span></label>
+        <textarea id="p-abstract" name="abstract" rows="10" required maxlength="4000"></textarea>
+        <span class="field__hint">
+          Plain text. <span id="p-count">0</span> / 4000 characters.
+        </span>
+      </p>
+
+      <button class="btn btn--gold btn--submit" type="submit">Submit Abstract</button>
+      <p class="form__status" id="posterStatus" role="status" aria-live="polite" hidden></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap site-footer__inner">
+    <div class="site-footer__brand">
+      <p class="site-footer__title">Steel City Chemistry</p>
+      <p class="site-footer__sub">Past, Present, and Future · Bridging Academia, Industry, and Community in Pittsburgh</p>
+      <p class="site-footer__org">Presented by the ACS Pittsburgh Local Section</p>
+    </div>
+    <nav class="site-footer__nav" aria-label="Footer">
+      <ul>
+        <li><a href="index.html">Event home</a></li>
+        <li><a href="register.html">Register</a></li>
+        <li><a href="https://pittsburghacs.org" target="_blank" rel="noopener">pittsburghacs.org</a></li>
+        <li><a href="https://www.acs.org" target="_blank" rel="noopener">acs.org</a></li>
+      </ul>
+    </nav>
+  </div>
+  <p class="site-footer__tags">#SteelCityChemistry · #ACS150</p>
+</footer>
+
+<script src="poster.js" defer></script>
+</body>
+</html>

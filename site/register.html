@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register — Steel City Chemistry | ACS Pittsburgh</title>
+<meta name="description" content="Register for Steel City Chemistry, an ACS150 anniversary celebration. Saturday, October 3, 2026, William Pitt Union, University of Pittsburgh.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="announce">
+  <span class="announce__mark">ACS150</span>
+  An ACS150 Anniversary Celebration · Saturday, October 3, 2026
+  <span class="announce__links">
+    <a href="https://pittsburghacs.org" target="_blank" rel="noopener">ACS Pittsburgh</a>
+    <a href="https://www.acs.org" target="_blank" rel="noopener">ACS National</a>
+  </span>
+</div>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="index.html">
+      <picture>
+        <source srcset="assets/img/acs-logo.webp" type="image/webp">
+        <img src="assets/img/acs-logo.png" alt="American Chemical Society" width="180" height="60" class="brand__logo">
+      </picture>
+      <span class="brand__section">Pittsburgh<br>Local Section</span>
+    </a>
+    <nav class="nav nav--simple" aria-label="Primary">
+      <ul class="nav__list">
+        <li><a href="index.html">Event home</a></li>
+        <li><a href="posters.html">Submit a poster</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<section class="section section--form">
+  <div class="wrap wrap--narrow">
+    <p class="eyebrow">Registration</p>
+    <h1 class="section__title">Register for Steel City Chemistry</h1>
+    <p class="lede">
+      Saturday, October&nbsp;3, 2026 · 8:00&nbsp;AM – 5:00&nbsp;PM · William Pitt Union.
+      Registration is <strong>$10 per person, refunded to you after you attend</strong>.
+      Fields marked <span class="req-key">*</span> are required.
+    </p>
+
+    <form id="registrationForm" name="registration" method="POST" class="form">
+      <noscript>
+        <p class="form__status form__status--error">
+          This form needs JavaScript enabled. Please enable it, or contact the organizers to register by email.
+        </p>
+      </noscript>
+
+      <input type="hidden" name="form" value="registration">
+      <p class="hp" hidden aria-hidden="true">
+        <label>Leave this field empty <input name="company-website" tabindex="-1" autocomplete="off"></label>
+      </p>
+
+      <div id="attendees"></div>
+
+      <p class="addmore">
+        <button type="button" class="btn btn--outline" id="addAttendee">+ Register another person</button>
+        <span class="field__hint">Registering colleagues or students? Add them here and pay for everyone at once.</span>
+      </p>
+
+      <p class="field">
+        <label for="f-other">Anything else that would be helpful for us to know?</label>
+        <textarea id="f-other" name="other-info" rows="4"></textarea>
+        <span class="field__hint">Accessibility requests, arrival questions, or anything else.</span>
+      </p>
+
+      <p class="form__total" id="formTotal" aria-live="polite"></p>
+      <button class="btn btn--gold btn--submit" type="submit">Continue to Payment</button>
+      <p class="form__status" id="formStatus" role="status" aria-live="polite" hidden></p>
+
+      <!-- ATTENDEE TEMPLATE — {{i}} is replaced with the attendee index. -->
+      <template id="attendeeTemplate">
+        <fieldset class="attendee" data-index="{{i}}">
+          <legend class="attendee__legend">
+            <span class="attendee__title"></span>
+            <button type="button" class="attendee__remove" hidden>Remove</button>
+          </legend>
+
+          <div class="form__grid">
+            <p class="field">
+              <label for="a{{i}}-name">Full name <span class="req">*</span></label>
+              <input id="a{{i}}-name" name="a{{i}}_name" type="text" required autocomplete="name">
+            </p>
+            <p class="field">
+              <label for="a{{i}}-email">Email address <span class="req">*</span></label>
+              <input id="a{{i}}-email" name="a{{i}}_email" type="email" required autocomplete="email">
+            </p>
+            <p class="field">
+              <label for="a{{i}}-phone">Phone number</label>
+              <input id="a{{i}}-phone" name="a{{i}}_phone" type="tel" autocomplete="tel">
+            </p>
+            <p class="field">
+              <label for="a{{i}}-org">Institution or organization</label>
+              <input id="a{{i}}-org" name="a{{i}}_organization" type="text" autocomplete="organization">
+            </p>
+          </div>
+
+          <p class="field">
+            <label for="a{{i}}-type">Which of the following best describes you? <span class="req">*</span></label>
+            <select id="a{{i}}-type" name="a{{i}}_attendee-type" class="js-type" required>
+              <option value="" selected disabled>Please select…</option>
+              <option>Industry</option>
+              <option>Academia</option>
+              <option>Undergraduate Student</option>
+              <option>Graduate Student</option>
+              <option>Post Doc</option>
+              <option>Government</option>
+              <option>K-12 Student</option>
+              <option>K-12 Educator</option>
+            </select>
+          </p>
+
+          <!-- Shown only for K-12 Student. -->
+          <p class="field js-grade" hidden>
+            <label for="a{{i}}-grade">What grade are you in? <span class="req">*</span></label>
+            <input id="a{{i}}-grade" name="a{{i}}_grade" type="text" inputmode="numeric">
+          </p>
+
+          <fieldset class="field field--group">
+            <legend>Are you an ACS member? <span class="req">*</span></legend>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="a{{i}}_acs-member" value="Yes" class="js-member" required> Yes</label>
+              <label class="choice"><input type="radio" name="a{{i}}_acs-member" value="No" class="js-member"> No</label>
+            </div>
+          </fieldset>
+
+          <!-- Shown only for non-members who are not K-12 students. -->
+          <fieldset class="field field--group js-recentgrad" hidden>
+            <legend>Have you graduated within the last 3 years?</legend>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="a{{i}}_recent-grad" value="Yes" class="js-recent"> Yes</label>
+              <label class="choice"><input type="radio" name="a{{i}}_recent-grad" value="No" class="js-recent"> No</label>
+            </div>
+          </fieldset>
+
+          <p class="field js-gradyear" hidden>
+            <label for="a{{i}}-gradyear">Graduation year</label>
+            <input id="a{{i}}-gradyear" name="a{{i}}_grad-year" type="text" inputmode="numeric" maxlength="4" placeholder="2024">
+          </p>
+
+          <fieldset class="field field--group">
+            <legend>Joining for breakfast? <span class="req">*</span></legend>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="a{{i}}_breakfast" value="Yes" required> Yes</label>
+              <label class="choice"><input type="radio" name="a{{i}}_breakfast" value="No"> No</label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field field--group">
+            <legend>Joining for lunch? <span class="req">*</span></legend>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="a{{i}}_lunch" value="Yes" required> Yes</label>
+              <label class="choice"><input type="radio" name="a{{i}}_lunch" value="No"> No</label>
+            </div>
+          </fieldset>
+
+          <p class="field">
+            <label for="a{{i}}-diet">Food allergies or dietary requirements?</label>
+            <textarea id="a{{i}}-diet" name="a{{i}}_dietary" rows="2"></textarea>
+          </p>
+        </fieldset>
+      </template>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap site-footer__inner">
+    <div class="site-footer__brand">
+      <p class="site-footer__title">Steel City Chemistry</p>
+      <p class="site-footer__sub">Past, Present, and Future · Bridging Academia, Industry, and Community in Pittsburgh</p>
+      <p class="site-footer__org">Presented by the ACS Pittsburgh Local Section</p>
+    </div>
+    <nav class="site-footer__nav" aria-label="Footer">
+      <ul>
+        <li><a href="index.html">Event home</a></li>
+        <li><a href="posters.html">Submit a poster</a></li>
+        <li><a href="https://pittsburghacs.org" target="_blank" rel="noopener">pittsburghacs.org</a></li>
+        <li><a href="https://www.acs.org" target="_blank" rel="noopener">acs.org</a></li>
+      </ul>
+    </nav>
+  </div>
+  <p class="site-footer__tags">#SteelCityChemistry · #ACS150</p>
+</footer>
+
+<script src="main.js" defer></script>
+</body>
+</html>

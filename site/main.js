@@ -158,9 +158,57 @@
       renumber();
     });
 
+    wireConditionals(block);
     attendeeBox.appendChild(block);
     relabel();
     return block;
+  }
+
+  /* Conditional questions within one attendee block:
+       - K-12 Student → ask for grade, and skip the recent-graduate question
+         (it makes no sense for someone still in school).
+       - Non-member (and not K-12) → ask whether they graduated within 3 years,
+         and only then for the graduation year.
+     Hidden inputs are cleared and de-required, otherwise the browser blocks
+     submission on a field nobody can see. */
+  function wireConditionals(block) {
+    var type = block.querySelector('.js-type');
+    var gradeField = block.querySelector('.js-grade');
+    var grade = gradeField.querySelector('input');
+    var recentBox = block.querySelector('.js-recentgrad');
+    var recents = block.querySelectorAll('.js-recent');
+    var yearField = block.querySelector('.js-gradyear');
+    var year = yearField.querySelector('input');
+    var members = block.querySelectorAll('.js-member');
+
+    function isMember() {
+      var checked = block.querySelector('.js-member:checked');
+      return checked ? checked.value === 'Yes' : null;
+    }
+
+    function sync() {
+      var isK12 = type.value === 'K-12 Student';
+
+      gradeField.hidden = !isK12;
+      grade.required = isK12;
+      if (!isK12) grade.value = '';
+
+      var askRecent = (isMember() === false) && !isK12;
+      recentBox.hidden = !askRecent;
+      if (!askRecent) {
+        for (var i = 0; i < recents.length; i++) recents[i].checked = false;
+      }
+
+      var recentYes = block.querySelector('.js-recent:checked');
+      var askYear = askRecent && recentYes && recentYes.value === 'Yes';
+      yearField.hidden = !askYear;
+      if (!askYear) year.value = '';
+    }
+
+    type.addEventListener('change', sync);
+    for (var m = 0; m < members.length; m++) members[m].addEventListener('change', sync);
+    for (var r = 0; r < recents.length; r++) recents[r].addEventListener('change', sync);
+    sync();
   }
 
   /* Field names must be a0_, a1_, a2_… with no gaps, because the Apps Script
