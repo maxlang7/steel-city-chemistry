@@ -2,35 +2,33 @@
  * Steel City Chemistry — registration endpoint.
  *
  * Receives POSTs from the registration form on the event website and appends
- * one row per registrant to the "Registrations" sheet of the spreadsheet this
- * script is bound to.
+ * ONE ROW PER ATTENDEE to the "Registrations" sheet. A single submission may
+ * cover several people (someone registering colleagues or students), in which
+ * case every row shares a Group ID and names the same payer. That is what makes
+ * a payment reconcilable: the PayPal transaction carries the Group ID, and the
+ * sheet holds full details for each individual it covers.
  *
  * SECURITY NOTES
  * --------------
- * This is deployed as "Execute as: Me / Who has access: Anyone", which lets
- * unauthenticated visitors invoke it. That is required — event registrants are
- * not signed in to Google. Because it runs with the deploying user's authority,
- * the code itself is the security boundary, so it is deliberately narrow:
+ * Deployed as "Execute as: Me / Who has access: Anyone", which is required —
+ * event registrants are not signed in to Google. Because it runs with the
+ * deploying user's authority, the code is the security boundary:
  *
- *   - The only OAuth scope requested is spreadsheets.currentonly, which grants
- *     access to THIS spreadsheet and no other file in Drive. Even a total
- *     compromise of this endpoint cannot reach anything else in the account.
- *   - The target sheet is fixed in code. No caller-supplied ID is ever used to
- *     open a document.
- *   - Only the fixed COLUMNS below are written. Extra POST parameters are
- *     ignored rather than appended.
- *   - Values are written with appendRow, which treats them as data, and every
- *     field is coerced to a string and length-capped so a caller cannot inject
- *     a formula or write an unbounded payload.
- *
- * Deploy: Extensions → Apps Script from the spreadsheet, then
- * Deploy → New deployment → Web app (Execute as: Me, Access: Anyone).
+ *   - Only scope requested is spreadsheets.currentonly: this spreadsheet and
+ *     nothing else in Drive. The target sheet is fixed in code; no
+ *     caller-supplied ID is ever used to open a document.
+ *   - Only the fixed columns below are written; extra POST params are ignored.
+ *   - Every value is coerced to a bounded string and formula-escaped.
+ *   - MAX_ATTENDEES caps how much one request can write.
  */
 
 var SHEET_NAME = 'Registrations';
 
-/** Column order must match the header row in the sheet. */
-var COLUMNS = [
+/** Flat registration fee per attendee, in USD. TODO: confirm with Ronghong. */
+var REGISTRATION_FEE = 0;
+
+/** Per-attendee fields, in sheet column order (after the group columns). */
+var ATTENDEE_FIELDS = [
   'name',
   'email',
   'phone',
@@ -39,20 +37,17 @@ var COLUMNS = [
   'attendee-type',
   'breakfast',
   'lunch',
-  'dietary',
-  'other-info'
+  'dietary'
 ];
 
 var MAX_FIELD_LENGTH = 2000;
+var MAX_ATTENDEES = 25;
 
 function doPost(e) {
   try {
     var data = (e && e.parameter) ? e.parameter : {};
 
-    // Fallback: if the request arrived with a non-form content type, e.parameter
-    // is empty and the payload sits in postData. Parse it rather than silently
-    // writing a blank row.
-    if (!data.name && e && e.postData && e.postData.contents) {
+    if (!data['a0_name'] && e && e.postData && e.postData.contents) {
       data = parseQuery(e.postData.contents);
     }
 
@@ -61,8 +56,11 @@ function doPost(e) {
       return json({ result: 'ok' });   // Silently accept, do not record.
     }
 
-    // Minimum viable registration. Anything less is a malformed request.
-    if (!data.name || !data.email) {
+    var count = parseInt(data.count, 10);
+    if (isNaN(count) || count < 1) count = 1;
+    if (count > MAX_ATTENDEES) count = MAX_ATTENDEES;
+
+    if (!data['a0_name'] || !data['a0_email']) {
       return json({ result: 'error', message: 'Name and email are required.' });
     }
 
@@ -71,31 +69,54 @@ function doPost(e) {
       return json({ result: 'error', message: 'Sheet not found: ' + SHEET_NAME });
     }
 
-    var values = [];
-    for (var i = 0; i < COLUMNS.length; i++) {
-      values.push(clean(data[COLUMNS[i]]));
+    var groupId  = clean(data['group-id']);
+    var payer    = clean(data['a0_name']);
+    var invoice  = data['invoice'] ? 'Yes' : 'No';
+    var other    = clean(data['other-info']);
+    var stamp    = new Date();
+
+    var rows = [];
+    for (var i = 0; i < count; i++) {
+      // Skip blank attendee blocks left behind in the form.
+      if (!data['a' + i + '_name']) continue;
+
+      var row = [groupId, String(i + 1)];
+      for (var f = 0; f < ATTENDEE_FIELDS.length; f++) {
+        row.push(clean(data['a' + i + '_' + ATTENDEE_FIELDS[f]]));
+      }
+      row.push(i === 0 ? other : '');           // Other info: once per group.
+      row.push(payer);                           // Paid by
+      row.push(invoice);                         // Invoice requested
+      row.push(String(REGISTRATION_FEE));        // Amount due
+      row.push('Unpaid');                        // Payment status
+      rows.push(row);
     }
 
-    // Lock so two simultaneous registrations can't write to the same row.
+    if (!rows.length) {
+      return json({ result: 'error', message: 'No valid attendees submitted.' });
+    }
+
     var lock = LockService.getScriptLock();
     lock.waitLock(20000);
     try {
       var r = sheet.getLastRow() + 1;
 
-      // Force the value cells to plain-text format BEFORE writing. Without this,
-      // appendRow/setValues parse a leading "=" as a formula, so a registrant
-      // could submit =IMPORTXML(...) and have it execute against this sheet with
-      // the owner's access. Text format makes the payload inert.
-      var dataRange = sheet.getRange(r, 2, 1, COLUMNS.length);
+      // Force value cells to text BEFORE writing. Without this, setValues parses
+      // a leading "=" as a formula, so a registrant could submit =IMPORTXML(...)
+      // and have it execute against this sheet with the owner's access.
+      var dataRange = sheet.getRange(r, 2, rows.length, rows[0].length);
       dataRange.setNumberFormat('@');
-      dataRange.setValues([values]);
+      dataRange.setValues(rows);
 
-      sheet.getRange(r, 1, 1, 1).setValue(new Date());
+      // Timestamp column, same value for every row in the group.
+      var stamps = [];
+      for (var s = 0; s < rows.length; s++) stamps.push([stamp]);
+      sheet.getRange(r, 1, rows.length, 1).setValues(stamps);
     } finally {
       lock.releaseLock();
     }
 
-    return json({ result: 'ok' });
+    return json({ result: 'ok', group: groupId, attendees: rows.length });
 
   } catch (err) {
     return json({ result: 'error', message: String(err) });
@@ -109,14 +130,12 @@ function doGet() {
 /**
  * Coerce to a bounded string and neutralise spreadsheet formulas.
  *
- * A leading space is the escape that actually works here. Two other approaches
- * were tried and verified NOT to work: a leading apostrophe (setValues still
- * parses the value as a formula — the apostrophe escape is a UI-input
- * convention, not an API one), and setting the cell number format to text
- * beforehand (format governs display, not whether input is parsed).
- *
- * The space also protects the CSV export path, where Excel would otherwise
- * evaluate the value on open.
+ * A leading space is the escape that actually works. Two other approaches were
+ * tried and verified NOT to work: a leading apostrophe (setValues still parses
+ * the value as a formula — the apostrophe escape is a UI-input convention, not
+ * an API one), and setting the cell number format to text beforehand (format
+ * governs display, not whether input is parsed). The space also protects the
+ * CSV export path, where Excel would otherwise evaluate the value on open.
  */
 function clean(value) {
   var s = (value === undefined || value === null) ? '' : String(value);

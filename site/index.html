@@ -505,70 +505,35 @@
         <label>Leave this field empty <input name="company-website" tabindex="-1" autocomplete="off"></label>
       </p>
 
-      <div class="form__grid">
-        <p class="field">
-          <label for="f-name">Full name <span class="req">*</span></label>
-          <input id="f-name" name="name" type="text" required autocomplete="name">
+      <noscript>
+        <p class="form__status form__status--error">
+          This registration form needs JavaScript enabled. Please enable it, or contact
+          the organizers to register by email.
         </p>
+      </noscript>
 
-        <p class="field">
-          <label for="f-email">Email address <span class="req">*</span></label>
-          <input id="f-email" name="email" type="email" required autocomplete="email">
-        </p>
+      <!-- Attendee blocks are rendered here from the template below. The first
+           is the person filling in the form; further ones are people they are
+           registering and paying for. -->
+      <div id="attendees"></div>
 
-        <p class="field">
-          <label for="f-phone">Phone number</label>
-          <input id="f-phone" name="phone" type="tel" autocomplete="tel">
-        </p>
-
-        <p class="field">
-          <label for="f-org">Organization</label>
-          <input id="f-org" name="organization" type="text" autocomplete="organization">
-        </p>
-      </div>
-
-      <fieldset class="field field--group">
-        <legend>Are you an ACS member? <span class="req">*</span></legend>
-        <div class="choices">
-          <label class="choice"><input type="radio" name="acs-member" value="Yes" required> Yes</label>
-          <label class="choice"><input type="radio" name="acs-member" value="No"> No</label>
-        </div>
-      </fieldset>
-
-      <p class="field">
-        <label for="f-role">Which best describes you? <span class="req">*</span></label>
-        <select id="f-role" name="attendee-type" required>
-          <option value="" selected disabled>Please select…</option>
-          <option>Industrial professional</option>
-          <option>Educator</option>
-          <option>Graduate student</option>
-          <option>Undergraduate</option>
-          <option>K-12 student</option>
-        </select>
+      <p class="addmore">
+        <button type="button" class="btn btn--outline" id="addAttendee">
+          + Register another person
+        </button>
+        <span class="field__hint">Registering colleagues or students? Add them here and pay for everyone at once.</span>
       </p>
 
       <fieldset class="field field--group">
-        <legend>Will you be joining us for breakfast? <span class="req">*</span></legend>
-        <p class="field__hint">Served 8:00 – 9:00 AM during registration and networking.</p>
-        <div class="choices">
-          <label class="choice"><input type="radio" name="breakfast" value="Yes" required> Yes</label>
-          <label class="choice"><input type="radio" name="breakfast" value="No"> No</label>
-        </div>
+        <legend>Payment</legend>
+        <label class="choice choice--block">
+          <input type="checkbox" name="invoice" value="Yes">
+          My institution requires an invoice or purchase order
+        </label>
+        <span class="field__hint">
+          Tick this if you can’t pay by card and need us to invoice your department. We’ll follow up by email.
+        </span>
       </fieldset>
-
-      <fieldset class="field field--group">
-        <legend>Will you be joining us for lunch? <span class="req">*</span></legend>
-        <p class="field__hint">Buffet lunch 12:20 – 1:40 PM, alongside poster viewing.</p>
-        <div class="choices">
-          <label class="choice"><input type="radio" name="lunch" value="Yes" required> Yes</label>
-          <label class="choice"><input type="radio" name="lunch" value="No"> No</label>
-        </div>
-      </fieldset>
-
-      <p class="field">
-        <label for="f-diet">Any food allergies or dietary requirements?</label>
-        <textarea id="f-diet" name="dietary" rows="3"></textarea>
-      </p>
 
       <p class="field">
         <label for="f-other">Anything else that would be helpful for us to know?</label>
@@ -576,12 +541,86 @@
         <span class="field__hint">Accessibility requests, arrival questions, or anything else.</span>
       </p>
 
+      <!-- ATTENDEE TEMPLATE — {{i}} is replaced with the attendee index. -->
+      <template id="attendeeTemplate">
+        <fieldset class="attendee" data-index="{{i}}">
+          <legend class="attendee__legend">
+            <span class="attendee__title"></span>
+            <button type="button" class="attendee__remove" hidden>Remove</button>
+          </legend>
+
+          <div class="form__grid">
+            <p class="field">
+              <label for="a{{i}}-name">Full name <span class="req">*</span></label>
+              <input id="a{{i}}-name" name="a{{i}}_name" type="text" required autocomplete="name">
+            </p>
+            <p class="field">
+              <label for="a{{i}}-email">Email address <span class="req">*</span></label>
+              <input id="a{{i}}-email" name="a{{i}}_email" type="email" required autocomplete="email">
+            </p>
+            <p class="field">
+              <label for="a{{i}}-phone">Phone number</label>
+              <input id="a{{i}}-phone" name="a{{i}}_phone" type="tel" autocomplete="tel">
+            </p>
+            <p class="field">
+              <label for="a{{i}}-org">Organization</label>
+              <input id="a{{i}}-org" name="a{{i}}_organization" type="text" autocomplete="organization">
+            </p>
+          </div>
+
+          <fieldset class="field field--group">
+            <legend>ACS member? <span class="req">*</span></legend>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="a{{i}}_acs-member" value="Yes" required> Yes</label>
+              <label class="choice"><input type="radio" name="a{{i}}_acs-member" value="No"> No</label>
+            </div>
+          </fieldset>
+
+          <p class="field">
+            <label for="a{{i}}-role">Which best describes them? <span class="req">*</span></label>
+            <select id="a{{i}}-role" name="a{{i}}_attendee-type" required>
+              <option value="" selected disabled>Please select…</option>
+              <option>Industrial professional</option>
+              <option>Educator</option>
+              <option>Graduate student</option>
+              <option>Undergraduate</option>
+              <option>K-12 student</option>
+            </select>
+          </p>
+
+          <fieldset class="field field--group">
+            <legend>Joining for breakfast? <span class="req">*</span></legend>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="a{{i}}_breakfast" value="Yes" required> Yes</label>
+              <label class="choice"><input type="radio" name="a{{i}}_breakfast" value="No"> No</label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field field--group">
+            <legend>Joining for lunch? <span class="req">*</span></legend>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="a{{i}}_lunch" value="Yes" required> Yes</label>
+              <label class="choice"><input type="radio" name="a{{i}}_lunch" value="No"> No</label>
+            </div>
+          </fieldset>
+
+          <p class="field">
+            <label for="a{{i}}-diet">Food allergies or dietary requirements?</label>
+            <textarea id="a{{i}}-diet" name="a{{i}}_dietary" rows="2"></textarea>
+          </p>
+        </fieldset>
+      </template>
+
       <p class="form__privacy">
         Your details are used only to organize this event — catering counts, name badges, and
         event updates. They are not shared with sponsors or used for marketing.
       </p>
 
-      <button class="btn btn--gold btn--submit" type="submit">Complete Registration</button>
+      <p class="form__total" id="formTotal" aria-live="polite"></p>
+
+      <button class="btn btn--gold btn--submit" type="submit">
+        Continue to Payment
+      </button>
 
       <p class="form__status" id="formStatus" role="status" aria-live="polite" hidden></p>
     </form>

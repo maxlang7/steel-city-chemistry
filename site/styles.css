@@ -581,6 +581,85 @@ a { color: var(--navy-soft); }
 .form__status--pending { background: var(--sky-pale); border-color: var(--sky); color: var(--navy); }
 .form__status--error   { background: #fdf0ef; border-color: #b4342a; color: #8c2820; }
 
+/* ---------- multi-attendee blocks ---------- */
+.attendee {
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  padding: 1.3rem;
+  margin: 0 0 1.2rem;
+}
+.attendee:first-child { border-color: var(--sky); background: #fbfdff; }
+.attendee__legend {
+  display: flex; align-items: center; gap: 1rem;
+  width: 100%; padding: 0 .4rem;
+  font-family: var(--font-display);
+  font-size: .78rem; font-weight: 800;
+  letter-spacing: .13em; text-transform: uppercase;
+  color: var(--gold-deep);
+}
+.attendee__title { flex: 1; }
+.attendee__remove {
+  font: inherit; font-size: .72rem; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: #8c2820; background: none;
+  border: 1.5px solid #e6c4c0; border-radius: 999px;
+  padding: .25rem .8rem; cursor: pointer;
+}
+.attendee__remove:hover { background: #fdf0ef; border-color: #b4342a; }
+/* Nested fieldsets inside an attendee block shouldn't add another frame. */
+.attendee .field--group { margin-bottom: 1.2rem; }
+
+.addmore { margin: 0 0 1.6rem; }
+.btn--outline {
+  display: inline-block;
+  background: none; color: var(--navy);
+  border: 2px dashed var(--sky);
+  padding: .7rem 1.3rem; border-radius: var(--r);
+  font: inherit; font-weight: 800; font-size: .9rem;
+  letter-spacing: .04em; text-transform: uppercase;
+  cursor: pointer; width: 100%;
+}
+.btn--outline:hover:not(:disabled) { border-color: var(--navy); background: var(--sky-pale); }
+.btn--outline:disabled { opacity: .45; cursor: not-allowed; }
+.addmore .field__hint { margin-top: .5rem; }
+
+.choice--block { display: flex; width: 100%; border-radius: var(--r); }
+
+.form__total {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem; font-weight: 800; color: var(--navy);
+  text-align: center;
+}
+
+/* ---------- confirmation page: reference + payment ---------- */
+.refbox {
+  margin: 2rem auto; max-width: 30rem; padding: 1.4rem;
+  background: var(--sky-pale); border: 1px solid var(--sky);
+  border-radius: var(--r);
+}
+.refbox__label {
+  font-size: .68rem; font-weight: 800; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--gold-deep); margin-bottom: .4rem;
+}
+.refbox__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.6rem; font-weight: 700; letter-spacing: .04em;
+  color: var(--navy); margin-bottom: .5rem;
+}
+.refbox__note { font-size: .87rem; color: var(--ink-soft); margin-bottom: .4rem; }
+.refbox__note:last-child { margin-bottom: 0; }
+
+.paybox { margin: 2rem auto; max-width: 34rem; }
+.paybox__amount { font-size: 1.1rem; color: var(--ink-soft); margin-bottom: 1rem; }
+.paybox__amount strong { color: var(--navy); font-size: 1.3rem; }
+.paybox__note { font-size: .85rem; color: var(--ink-soft); margin-top: 1rem; }
+.paybox__pending {
+  background: var(--sky-pale); border-left: 3px solid var(--sky);
+  padding: .9rem 1.1rem; border-radius: 0 6px 6px 0;
+  font-size: .95rem; color: var(--ink-soft); text-align: left;
+}
+
 /* ==========================================================================
    Thank-you page
    ========================================================================== */

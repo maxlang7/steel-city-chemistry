@@ -97,8 +97,103 @@
      than pretending to succeed and dropping someone's registration. */
   var ENDPOINT = 'https://script.google.com/macros/s/AKfycbwrkFTDmgnfayN0bySO9RkM-AvvN9EK2xHB-PzK7mMKMaCpi2drPYNk3XuykGpb80gk6Q/exec';
 
+  /* Flat fee per attendee, in USD. Keep in step with REGISTRATION_FEE in
+     apps-script/Code.gs — the sheet records what the site quoted. */
+  var FEE = 0; // TODO: confirm the registration fee with Ronghong
+
   var regForm = document.getElementById('registrationForm');
   var status = document.getElementById('formStatus');
+
+  /* ---------- attendee blocks ---------- */
+  var attendeeBox = document.getElementById('attendees');
+  var template = document.getElementById('attendeeTemplate');
+  var addBtn = document.getElementById('addAttendee');
+  var totalEl = document.getElementById('formTotal');
+  var MAX_ATTENDEES = 25;   // Mirrors the cap in the Apps Script.
+
+  function attendeeCount() {
+    return attendeeBox ? attendeeBox.querySelectorAll('.attendee').length : 0;
+  }
+
+  function relabel() {
+    var blocks = attendeeBox.querySelectorAll('.attendee');
+    for (var i = 0; i < blocks.length; i++) {
+      var title = blocks[i].querySelector('.attendee__title');
+      title.textContent = i === 0
+        ? 'Your details'
+        : 'Additional attendee ' + i;
+      // Only additional attendees can be removed; the first is the registrant.
+      blocks[i].querySelector('.attendee__remove').hidden = (i === 0);
+    }
+    if (addBtn) addBtn.disabled = blocks.length >= MAX_ATTENDEES;
+    updateTotal();
+  }
+
+  function updateTotal() {
+    if (!totalEl) return;
+    var n = attendeeCount();
+    var people = n + (n === 1 ? ' person' : ' people');
+    if (FEE > 0) {
+      totalEl.textContent = 'Total: ' + people + ' × $' + FEE + ' = $' + (n * FEE);
+    } else {
+      // No fee configured yet — still tell people how many they're registering.
+      totalEl.textContent = 'Registering ' + people + '.';
+    }
+  }
+
+  function addAttendee() {
+    if (!template || attendeeCount() >= MAX_ATTENDEES) return;
+    // Index by a counter that never reuses numbers, so field names stay unique
+    // even after removals.
+    var idx = attendeeBox.dataset.next ? parseInt(attendeeBox.dataset.next, 10) : 0;
+    attendeeBox.dataset.next = idx + 1;
+
+    var markup = template.innerHTML.replace(/\{\{i\}\}/g, String(idx));
+    var wrap = document.createElement('div');
+    wrap.innerHTML = markup;
+    var block = wrap.firstElementChild;
+
+    block.querySelector('.attendee__remove').addEventListener('click', function () {
+      block.remove();
+      renumber();
+    });
+
+    attendeeBox.appendChild(block);
+    relabel();
+    return block;
+  }
+
+  /* Field names must be a0_, a1_, a2_… with no gaps, because the Apps Script
+     walks the indices in order. Rewrite them after any removal. */
+  function renumber() {
+    var blocks = attendeeBox.querySelectorAll('.attendee');
+    for (var i = 0; i < blocks.length; i++) {
+      var block = blocks[i];
+      block.dataset.index = i;
+      var named = block.querySelectorAll('[name]');
+      for (var n = 0; n < named.length; n++) {
+        named[n].name = named[n].name.replace(/^a\d+_/, 'a' + i + '_');
+      }
+      var ids = block.querySelectorAll('[id]');
+      for (var d = 0; d < ids.length; d++) {
+        var oldId = ids[d].id;
+        var newId = oldId.replace(/^a\d+-/, 'a' + i + '-');
+        ids[d].id = newId;
+        var label = block.querySelector('label[for="' + oldId + '"]');
+        if (label) label.setAttribute('for', newId);
+      }
+    }
+    attendeeBox.dataset.next = blocks.length;
+    relabel();
+  }
+
+  if (attendeeBox && template) {
+    addAttendee();                       // The registrant's own block.
+    if (addBtn) addBtn.addEventListener('click', function () {
+      var block = addAttendee();
+      if (block) block.querySelector('input[type="text"]').focus();
+    });
+  }
 
   if (regForm) {
     var setStatus = function (msg, kind) {
@@ -123,6 +218,18 @@
       submitBtn.textContent = 'Submitting…';
       setStatus('Sending your registration…', 'pending');
 
+      /* The group id is generated here, not server-side: the request is sent
+         no-cors so the response body is unreadable, and the confirmation page
+         needs the id to show the registrant and to tag the PayPal payment. */
+      var count = attendeeCount();
+      var groupId = 'SCC-' +
+        Date.now().toString(36).toUpperCase().slice(-5) +
+        Math.random().toString(36).toUpperCase().slice(2, 4);
+
+      var payload = new URLSearchParams(new FormData(regForm));
+      payload.set('group-id', groupId);
+      payload.set('count', String(count));
+
       /* Apps Script redirects through a googleusercontent.com domain that does
          not send CORS headers, so the response is unreadable from here — hence
          no-cors. The request itself still lands. Form-encoding matters twice
@@ -133,10 +240,11 @@
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-        body: new URLSearchParams(new FormData(regForm)).toString()
+        body: payload.toString()
       })
         .then(function () {
-          window.location.href = 'thanks.html';
+          window.location.href =
+            'thanks.html?g=' + encodeURIComponent(groupId) + '&n=' + count;
         })
         .catch(function () {
           submitBtn.disabled = false;

@@ -21,11 +21,26 @@
       <svg viewBox="0 0 48 48"><path d="M14 25l7 7 14-16" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </span>
 
-    <h1>You’re registered.</h1>
+    <h1>Registration received.</h1>
     <p class="thanks__lede">
       Thank you for registering for <strong>Steel City Chemistry: Past, Present, and Future</strong>.
-      We’ve recorded your details and look forward to seeing you in Pittsburgh.
+      We’ve recorded your details — one last step to secure your place.
     </p>
+
+    <div class="refbox" id="refBox" hidden>
+      <p class="refbox__label">Your registration reference</p>
+      <p class="refbox__code" id="refCode"></p>
+      <p class="refbox__note" id="refPeople"></p>
+      <p class="refbox__note">
+        Please quote this reference in any correspondence about your registration,
+        payment, or refund. Keep this page or take a screenshot.
+      </p>
+    </div>
+
+    <!-- PAYMENT PENDING: fill in PAYPAL_BUSINESS and FEE in payment.js to switch
+         this on. Until then the page tells registrants payment details follow by
+         email rather than showing a broken button. -->
+    <div class="paybox" id="payBox"></div>
 
     <dl class="thanks__meta">
       <div><dt>Date</dt><dd>Saturday, October 3, 2026</dd></div>
@@ -56,5 +71,6 @@
   <p class="site-footer__tags">#SteelCityChemistry · #ACS150</p>
 </footer>
 
+<script src="payment.js" defer></script>
 </body>
 </html>
