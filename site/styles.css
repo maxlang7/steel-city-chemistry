@@ -822,6 +822,15 @@ a { color: var(--navy-soft); }
   font-weight: 800; color: var(--navy);
   letter-spacing: .02em; line-height: 1.25;
 }
+/* Logos arrive at wildly different aspect ratios (a square CMU wordmark next to
+   a 4:1 Duquesne lockup). Constraining height and letting width follow keeps
+   them optically comparable instead of sizing them by area. */
+.logo picture { display: block; }
+.logo img { width: auto; object-fit: contain; }
+.logos--platinum .logo img { max-height: 84px; max-width: 210px; }
+.logos--gold .logo img     { max-height: 68px; max-width: 170px; }
+.logos--silver .logo img   { max-height: 56px; max-width: 145px; }
+.logos--bronze .logo img   { max-height: 46px; max-width: 125px; }
 .logos--platinum .logo { min-width: 260px; min-height: 128px; border-width: 2px; border-color: var(--navy); }
 .logos--platinum .logo span { font-size: 1.5rem; }
 .logos--gold .logo { min-width: 210px; min-height: 104px; border-color: var(--gold); }
