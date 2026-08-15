@@ -888,6 +888,28 @@ a { color: var(--navy-soft); }
    ========================================================================== */
 @media (max-width: 980px) {
   .nav-toggle { display: flex; }
+
+  /* Let the header wrap rather than push the menu button off-screen. */
+  .site-header__inner { flex-wrap: wrap; row-gap: .4rem; }
+
+  /* The form pages (register, posters) use .nav--simple and have NO menu
+     toggle, so the collapsing rules below must not apply to them — otherwise
+     their links are display:none with nothing to reveal them, stranding phone
+     visitors with no way back to the event page. Keep it inline, wrapping to
+     its own row when space runs out. */
+  .nav.nav--simple {
+    position: static;
+    display: flex;
+    width: 100%;
+    margin-left: 0;
+    padding: 0 0 .3rem;
+    background: none;
+    border: 0;
+    box-shadow: none;
+  }
+  .nav--simple .nav__list { flex-direction: row; gap: 1.3rem; }
+  .nav--simple .nav__list a { padding: .2rem 0; border-bottom: 0; }
+  .nav--simple .nav__list a::after { display: block; }
   .nav {
     position: absolute; top: 100%; left: 0; right: 0;
     flex-direction: column; align-items: stretch; gap: .4rem;
@@ -910,6 +932,29 @@ a { color: var(--navy-soft); }
 
 @media (max-width: 620px) {
   body { font-size: 16px; }
+
+  /* Two-part brand plus a menu button is tight at 390px; shrink the lockup so
+     the toggle stays on screen instead of forcing horizontal scroll. */
+  .site-header__inner { gap: .6rem; }
+  .brand { gap: .55rem; }
+  .brand__logo { height: 26px; }
+  .brand__section {
+    font-size: .55rem; letter-spacing: .05em;
+    padding-left: .55rem; border-left-width: 2px;
+  }
+  /* Icon alone is enough at this width, but keep a 44px hit area — anything
+     smaller is genuinely hard to tap accurately. */
+  .nav-toggle {
+    padding: .45rem .75rem; font-size: .78rem;
+    min-height: 44px; min-width: 44px;
+    justify-content: center;
+  }
+  .nav-toggle__label { display: none; }
+
+  /* Comfortable hit area for removing an attendee on a touch screen. */
+  .attendee__remove { min-height: 40px; padding: .4rem 1rem; }
+  .attendee { padding: 1rem .8rem; }
+  .attendee__legend { gap: .5rem; }
   .hero { padding-top: 2rem; }
   .hero__inner { padding-bottom: 9rem; }
   .hero__acs150 { height: 84px; margin-bottom: 1.3rem; }
