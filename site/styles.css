@@ -84,17 +84,6 @@ a { color: var(--navy-soft); }
   letter-spacing: .1em;
   margin-right: .5rem;
 }
-.announce__links { margin-left: 1rem; }
-.announce__links a {
-  color: #fff; text-decoration: none;
-  border-bottom: 1px solid rgba(255,255,255,.4);
-  margin-left: 1rem; padding-bottom: 1px;
-}
-.announce__links a:hover { color: var(--gold); border-color: var(--gold); }
-@media (max-width: 620px) {
-  .announce__links { display: block; margin: .4rem 0 0; }
-  .announce__links a:first-child { margin-left: 0; }
-}
 
 /* Simple header nav on the form pages — no sticky CTA, no scroll-spy. */
 .nav--simple { position: static; display: flex; }
@@ -113,14 +102,24 @@ a { color: var(--navy-soft); }
   min-height: var(--header-h);
 }
 
-.brand { display: flex; align-items: center; gap: .85rem; text-decoration: none; flex-shrink: 0; }
-.brand__logo { height: 34px; width: auto; }
+/* Two separate destinations: the ACS mark goes to acs.org, the section
+   wordmark to pittsburghacs.org. Kept visually as one lockup. */
+.brand { display: flex; align-items: center; gap: .85rem; flex-shrink: 0; }
+.brand__acs, .brand__section {
+  text-decoration: none;
+  border-radius: 4px;
+  transition: opacity .15s ease, color .15s ease;
+}
+.brand__acs { display: block; }
+.brand__acs:hover { opacity: .72; }
+.brand__logo { height: 34px; width: auto; display: block; }
 .brand__section {
   font-size: .68rem; line-height: 1.25; font-weight: 700;
   text-transform: uppercase; letter-spacing: .07em;
   color: var(--navy); padding-left: .85rem;
   border-left: 2px solid var(--gold);
 }
+.brand__section:hover { color: var(--gold-deep); }
 
 .nav { display: flex; align-items: center; gap: 1.4rem; margin-left: auto; }
 .nav__list { display: flex; gap: 1.35rem; }
@@ -199,7 +198,7 @@ a { color: var(--navy-soft); }
 }
 .hero__inner { position: relative; z-index: 2; text-align: center; padding-bottom: 15rem; }
 
-.hero__acs150 { height: 74px; width: auto; margin: 0 auto 1.6rem; border-radius: 6px; }
+.hero__acs150 { height: 118px; width: auto; margin: 0 auto 1.8rem; border-radius: 8px; }
 
 .hero__title {
   font-family: var(--font-display);
@@ -913,7 +912,7 @@ a { color: var(--navy-soft); }
   body { font-size: 16px; }
   .hero { padding-top: 2rem; }
   .hero__inner { padding-bottom: 9rem; }
-  .hero__acs150 { height: 56px; margin-bottom: 1.2rem; }
+  .hero__acs150 { height: 84px; margin-bottom: 1.3rem; }
   .hero__art { bottom: 2.1rem; }
   .hero__meta { gap: 1.2rem; }
   .hero__meta > div { border-left: 0; padding: 0; flex: 1 1 100%; }

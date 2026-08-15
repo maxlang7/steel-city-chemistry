@@ -7,7 +7,7 @@
 <meta name="description" content="Submit a student poster abstract for Steel City Chemistry, an ACS150 anniversary celebration at the University of Pittsburgh, October 3, 2026.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=202608151238">
 </head>
 <body>
 
@@ -16,21 +16,24 @@
 <div class="announce">
   <span class="announce__mark">ACS150</span>
   An ACS150 Anniversary Celebration · Saturday, October 3, 2026
-  <span class="announce__links">
-    <a href="https://pittsburghacs.org" target="_blank" rel="noopener">ACS Pittsburgh</a>
-    <a href="https://www.acs.org" target="_blank" rel="noopener">ACS National</a>
-  </span>
 </div>
 
 <header class="site-header">
   <div class="wrap site-header__inner">
-    <a class="brand" href="index.html">
-      <picture>
-        <source srcset="assets/img/acs-logo.webp" type="image/webp">
-        <img src="assets/img/acs-logo.png" alt="American Chemical Society" width="180" height="60" class="brand__logo">
-      </picture>
-      <span class="brand__section">Pittsburgh<br>Local Section</span>
-    </a>
+    <div class="brand">
+      <a class="brand__acs" href="https://www.acs.org" target="_blank" rel="noopener"
+         aria-label="American Chemical Society — acs.org (opens in a new tab)" title="ACS National — acs.org">
+        <picture>
+          <source srcset="assets/img/acs-logo.webp" type="image/webp">
+          <img src="assets/img/acs-logo.png" alt="American Chemical Society" width="180" height="60" class="brand__logo">
+        </picture>
+      </a>
+      <a class="brand__section" href="https://pittsburghacs.org" target="_blank" rel="noopener"
+         aria-label="ACS Pittsburgh Local Section — pittsburghacs.org (opens in a new tab)" title="ACS Pittsburgh Local Section">
+        Pittsburgh<br>Local Section
+      </a>
+    </div>
+
     <nav class="nav nav--simple" aria-label="Primary">
       <ul class="nav__list">
         <li><a href="index.html">Event home</a></li>
@@ -173,7 +176,7 @@
   <p class="site-footer__tags">#SteelCityChemistry · #ACS150</p>
 </footer>
 
-<script src="profile.js" defer></script>
-<script src="poster.js" defer></script>
+<script src="profile.js?v=202608151238" defer></script>
+<script src="poster.js?v=202608151238" defer></script>
 </body>
 </html>

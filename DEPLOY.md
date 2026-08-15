@@ -7,7 +7,15 @@ GitHub Pages has been retired — this repo is version control only.
 
 ## Publish a change
 
-From the repo root:
+If CSS or JS changed, stamp a new cache version first — Bluehost and the
+Cloudflare layer in front of it serve those files with a long lifetime, so
+without this an edit stays invisible to anyone who has visited before:
+
+```sh
+./bump-cache.sh
+```
+
+Then, from the repo root:
 
 ```sh
 rsync -avz --no-perms --no-owner --no-group --omit-dir-times \
