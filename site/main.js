@@ -60,36 +60,6 @@
     sections.forEach(function (s) { spy.observe(s); });
   }
 
-  /* ---------- speaker category filter ---------- */
-  var filters = Array.prototype.slice.call(document.querySelectorAll('.filter'));
-  var grid = document.getElementById('speakerGrid');
-  var empty = document.getElementById('filterEmpty');
-
-  if (filters.length && grid) {
-    var cards = Array.prototype.slice.call(grid.querySelectorAll('.person'));
-
-    filters.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var want = btn.dataset.filter;
-        var shown = 0;
-
-        filters.forEach(function (b) {
-          var active = b === btn;
-          b.classList.toggle('is-active', active);
-          b.setAttribute('aria-pressed', String(active));
-        });
-
-        cards.forEach(function (card) {
-          var match = want === 'all' || card.dataset.cat === want;
-          card.hidden = !match;
-          if (match) shown++;
-        });
-
-        if (empty) empty.hidden = shown > 0;
-      });
-    });
-  }
-
   /* ---------- registration form → Google Sheet ----------
      Posts to an Apps Script web app which appends a row to
      "Steel City Chemistry — Registrations". Paste the /exec URL below.

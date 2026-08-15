@@ -396,19 +396,7 @@ a { color: var(--navy-soft); }
 
 .people--organizers { grid-template-columns: repeat(auto-fill, minmax(226px, 1fr)); }
 
-/* ---------- filters ---------- */
-.filters { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 2rem; }
-.filter {
-  font: inherit; font-size: .85rem; font-weight: 700;
-  padding: .5rem 1.1rem; border-radius: 999px;
-  border: 1.5px solid var(--sky);
-  background: var(--white); color: var(--navy);
-  cursor: pointer; transition: background-color .15s ease, color .15s ease, border-color .15s ease;
-}
-.filter:hover { border-color: var(--navy); }
-.filter.is-active { background: var(--navy); border-color: var(--navy); color: #fff; }
-.filter-empty { margin-top: 2rem; color: var(--ink-soft); font-style: italic; }
-.person[hidden] { display: none; }
+/* Speaker cards are shown in one grid; the category filter was removed. */
 
 /* ==========================================================================
    Program
