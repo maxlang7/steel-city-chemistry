@@ -734,6 +734,13 @@ a { color: var(--navy-soft); }
 .paybox__form { margin-bottom: 0; }
 .paybox__note { font-size: .85rem; color: var(--ink-soft); margin: 1rem 0 0; }
 .paybox__note--refund { font-weight: 600; color: var(--navy); }
+/* Shown when the PayPal SDK fails to load and the page drops back to the
+   plain payment link — the payer still has a route through. */
+.paybox__note--warn {
+  color: #8a4b0a; background: #fdf0dc; border-left: 3px solid var(--gold);
+  padding: .6rem .8rem; border-radius: 0 5px 5px 0; font-weight: 600;
+}
+.paybox__buttons { margin-top: 1.2rem; min-height: 50px; }
 .paybox__pending {
   background: var(--sky-pale); border-left: 3px solid var(--sky);
   padding: .9rem 1.1rem; border-radius: 0 6px 6px 0;
