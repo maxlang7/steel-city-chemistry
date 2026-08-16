@@ -7,7 +7,7 @@
 <meta name="description" content="Register for Steel City Chemistry, an ACS150 anniversary celebration. Saturday, October 3, 2026, William Pitt Union, University of Pittsburgh.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css?v=202608151735">
+<link rel="stylesheet" href="styles.css?v=202608152037">
 </head>
 <body>
 
@@ -50,8 +50,14 @@
     <h1 class="section__title">Register for Steel City Chemistry</h1>
     <p class="lede">
       Saturday, October&nbsp;3, 2026 · 8:00&nbsp;AM – 5:00&nbsp;PM · William Pitt Union.
-      Registration is <strong>$10 per person, refunded to you after you attend</strong>.
+      <strong>Open to the public and free to attend.</strong>
+      Registration is <strong>$10 per person, refunded to you after you attend</strong> —
+      it simply holds your place and helps us plan catering.
       Fields marked <span class="req-key">*</span> are required.
+    </p>
+
+    <p class="note note--deadline">
+      <strong>Registration closes Wednesday, September&nbsp;16, 2026 at 11:59&nbsp;PM.</strong>
     </p>
 
     <form id="registrationForm" name="registration" method="POST" class="form">
@@ -105,8 +111,8 @@
               <input id="a{{i}}-phone" name="a{{i}}_phone" type="tel" autocomplete="tel">
             </p>
             <p class="field">
-              <label for="a{{i}}-org">Institution or organization</label>
-              <input id="a{{i}}-org" name="a{{i}}_organization" type="text" autocomplete="organization">
+              <label for="a{{i}}-org">Institution or organization <span class="req">*</span></label>
+              <input id="a{{i}}-org" name="a{{i}}_organization" type="text" required autocomplete="organization">
             </p>
           </div>
 
@@ -199,7 +205,7 @@
   <p class="site-footer__tags">#SteelCityChemistry · #ACS150</p>
 </footer>
 
-<script src="profile.js?v=202608151735" defer></script>
-<script src="main.js?v=202608151735" defer></script>
+<script src="profile.js?v=202608152037" defer></script>
+<script src="main.js?v=202608152037" defer></script>
 </body>
 </html>
