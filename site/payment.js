@@ -15,7 +15,7 @@
    * someone registered with can still be matched automatically. The no-code
    * link accepts no parameters and cannot do this.
    * --------------------------------------------------------------------- */
-  var PAYPAL_CLIENT_ID = '';
+  var PAYPAL_CLIENT_ID = 'AYK3n1BJaPJpqUR9WhGp3izf9jWSla5TWX-wwTcnuHSJDG7x0W7Om2zAKHRwi1sPfLu4SJRP8S9NA6Mt';
 
   var PAYPAL_LINK = 'https://www.paypal.com/ncp/payment/MP4EYJW6RC3LQ';
   var FEE = 10;
