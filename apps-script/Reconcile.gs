@@ -116,6 +116,7 @@ function matchPayPalPayments() {
 
   var matched = 0, already = 0;
   var unmatched = [];
+  var shortfalls = [];
   var touched = {};
 
   for (var t2 = 0; t2 < txns.length; t2++) {
@@ -140,10 +141,26 @@ function matchPayPalPayments() {
 
     if (!idx) { unmatched.push([tx.date, tx.name, tx.email, tx.gross, tx.txn, tx.reference]); continue; }
 
+    /* What they owe is decided here, not by the payment. Amount Due is written
+       server-side, one row per attendee; the amount paid arrives from a page
+       whose ?n= parameter is editable. So compare, and say so when they differ
+       rather than quietly marking a short payment as settled. */
+    var grp   = norm_(rows[idx[0]][C_GROUP - 1]);
+    var owed  = groupTotal[grp] || 0;
+    var delta = round2_(tx.gross - owed);
+    var status = 'Paid';
+    if (delta < -0.005) {
+      status = 'SHORT $' + Math.abs(delta).toFixed(2) + ' (paid $' + tx.gross.toFixed(2) + ' of $' + owed.toFixed(2) + ')';
+      shortfalls.push([tx.date, tx.name, tx.email, tx.gross, owed, delta, tx.txn, grp]);
+    } else if (delta > 0.005) {
+      status = 'Paid (over by $' + delta.toFixed(2) + ')';
+      shortfalls.push([tx.date, tx.name, tx.email, tx.gross, owed, delta, tx.txn, grp]);
+    }
+
     for (var m = 0; m < idx.length; m++) {
       var r = idx[m];
-      if (norm_(rows[r][C_STATUS - 1]) === 'paid' && rows[r][C_TXN - 1]) { already++; continue; }
-      rows[r][C_STATUS - 1] = 'Paid';
+      if (norm_(rows[r][C_STATUS - 1]).indexOf('paid') === 0 && rows[r][C_TXN - 1]) { already++; continue; }
+      rows[r][C_STATUS - 1] = status;
       rows[r][C_TXN - 1]    = tx.txn;
       rows[r][C_PAYER - 1]  = tx.email;
       rows[r][C_MATCH - 1]  = basis;
@@ -155,15 +172,16 @@ function matchPayPalPayments() {
   // One write for the whole block rather than a call per row.
   reg.getRange(2, 1, rows.length, C_MATCH).setValues(rows);
 
-  writeUnmatched_(ss, unmatched);
+  writeUnmatched_(ss, unmatched, shortfalls);
 
   ui.alert(
     'PayPal matching complete.\n\n' +
     'Transactions read: ' + txns.length + '\n' +
     'Registration rows marked Paid: ' + matched + '\n' +
     'Already paid, left alone: ' + already + '\n' +
-    'Transactions not matched: ' + unmatched.length +
-    (unmatched.length ? '\n\nSee the "' + REPORT_SHEET + '" tab.' : '') +
+    'Transactions not matched: ' + unmatched.length + '\n' +
+    'Amount mismatches: ' + shortfalls.length +
+    ((unmatched.length || shortfalls.length) ? '\n\nSee the "' + REPORT_SHEET + '" tab.' : '') +
     '\n\nCheck the Match Basis column: REFERENCE is exact, NAME+AMOUNT is a ' +
     'guess worth eyeballing before you refund.');
 }
@@ -232,15 +250,29 @@ function readTransactions_(sh) {
   return out;
 }
 
-function writeUnmatched_(ss, rows) {
+function writeUnmatched_(ss, rows, shortfalls) {
   var sh = ss.getSheetByName(REPORT_SHEET) || ss.insertSheet(REPORT_SHEET);
   sh.clear();
-  sh.getRange(1, 1, 1, 6)
+
+  sh.getRange(1, 1).setValue('UNMATCHED PAYMENTS — no registration found')
+    .setFontWeight('bold').setFontColor('#9a2b2b');
+  sh.getRange(2, 1, 1, 6)
     .setValues([['Date', 'Payer Name', 'Payer Email', 'Gross', 'Transaction ID', 'Reference']])
     .setFontWeight('bold');
-  if (rows.length) sh.getRange(2, 1, rows.length, 6).setValues(rows);
-  sh.setFrozenRows(1);
+  if (rows.length) sh.getRange(3, 1, rows.length, 6).setValues(rows);
+
+  var r = 3 + Math.max(rows.length, 1) + 2;
+  sh.getRange(r, 1).setValue('AMOUNT MISMATCHES — matched, but paid \u2260 owed')
+    .setFontWeight('bold').setFontColor('#8a4b0a');
+  sh.getRange(r + 1, 1, 1, 8)
+    .setValues([['Date', 'Payer Name', 'Payer Email', 'Paid', 'Owed', 'Difference', 'Transaction ID', 'Group']])
+    .setFontWeight('bold');
+  if (shortfalls && shortfalls.length) {
+    sh.getRange(r + 2, 1, shortfalls.length, 8).setValues(shortfalls);
+  }
 }
+
+function round2_(n) { return Math.round(n * 100) / 100; }
 
 /** PayPal writes amounts as text with thousands separators in some locales. */
 function parseAmount_(v) {
