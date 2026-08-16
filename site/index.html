@@ -18,7 +18,7 @@
 <meta property="og:image" content="assets/img/og-card.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css?v=202608152045">
+<link rel="stylesheet" href="styles.css?v=202608152049">
 </head>
 <body>
 
@@ -71,17 +71,20 @@
 <section class="hero" id="top">
   <div class="hero__sky" aria-hidden="true"></div>
   <picture class="hero__art" aria-hidden="true">
-    <source media="(min-width: 1100px)" srcset="assets/img/hero-1536.webp" type="image/webp">
-    <source media="(min-width: 700px)" srcset="assets/img/hero-1100.webp" type="image/webp">
-    <source srcset="assets/img/hero-760.webp" type="image/webp">
-    <img src="assets/img/hero-1536.jpg" alt="" width="1536" height="350" fetchpriority="high" decoding="async">
+    <source media="(min-width: 1100px)" srcset="assets/img/hero-1536.webp?v=202608152049" type="image/webp">
+    <source media="(min-width: 700px)" srcset="assets/img/hero-1100.webp?v=202608152049" type="image/webp">
+    <source srcset="assets/img/hero-760.webp?v=202608152049" type="image/webp">
+    <img src="assets/img/hero-1536.jpg?v=202608152049" alt="" width="1536" height="350" fetchpriority="high" decoding="async">
   </picture>
 
   <div class="wrap hero__inner">
-    <picture>
-      <source srcset="assets/img/acs150.webp" type="image/webp">
-      <img src="assets/img/acs150.png" alt="Celebrating ACS 150 — Chemistry is Everything" class="hero__acs150" width="425" height="252" loading="eager" decoding="async">
-    </picture>
+    <a class="hero__acs150-link" href="https://www.acs.org/150.html" target="_blank" rel="noopener"
+       aria-label="ACS 150th Anniversary — acs.org/150 (opens in a new tab)" title="ACS 150th Anniversary — acs.org/150">
+      <picture>
+        <source srcset="assets/img/acs150.webp" type="image/webp">
+        <img src="assets/img/acs150.png" alt="Celebrating ACS 150 — Chemistry is Everything" class="hero__acs150" width="425" height="252" loading="eager" decoding="async">
+      </picture>
+    </a>
 
     <h1 class="hero__title">Steel City Chemistry</h1>
     <p class="hero__sub">Past, Present, and Future</p>
@@ -627,7 +630,7 @@
   <p class="site-footer__tags">#SteelCityChemistry · #ACS150</p>
 </footer>
 
-<script src="profile.js?v=202608152045" defer></script>
-<script src="main.js?v=202608152045" defer></script>
+<script src="profile.js?v=202608152049" defer></script>
+<script src="main.js?v=202608152049" defer></script>
 </body>
 </html>

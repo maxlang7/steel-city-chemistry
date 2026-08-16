@@ -198,7 +198,17 @@ a { color: var(--navy-soft); }
 }
 .hero__inner { position: relative; z-index: 2; text-align: center; padding-bottom: 15rem; }
 
-.hero__acs150 { height: 118px; width: auto; margin: 0 auto 1.8rem; border-radius: 8px; }
+/* The link carries the centring and spacing so it shrink-wraps the logo —
+   a block-level anchor would make the whole hero width clickable. */
+.hero__acs150-link {
+  display: inline-block; margin: 0 auto 1.8rem;
+  border-radius: 8px; transition: transform .15s ease, box-shadow .15s ease;
+}
+.hero__acs150-link:hover, .hero__acs150-link:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .3);
+}
+.hero__acs150 { height: 118px; width: auto; display: block; border-radius: 8px; }
 
 .hero__title {
   font-family: var(--font-display);
@@ -975,7 +985,8 @@ a { color: var(--navy-soft); }
   .attendee__legend { gap: .5rem; }
   .hero { padding-top: 2rem; }
   .hero__inner { padding-bottom: 9rem; }
-  .hero__acs150 { height: 84px; margin-bottom: 1.3rem; }
+  .hero__acs150 { height: 84px; }
+  .hero__acs150-link { margin-bottom: 1.3rem; }
   .hero__art { bottom: 2.1rem; }
   .hero__meta { gap: 1.2rem; }
   .hero__meta > div { border-left: 0; padding: 0; flex: 1 1 100%; }
