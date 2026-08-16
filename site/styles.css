@@ -699,6 +699,17 @@ a { color: var(--navy-soft); }
 
 .choice--block { display: flex; width: 100%; border-radius: var(--r); }
 
+/* A volunteer opt-in, not a pill among pills: full width, aligned to the top so
+   the hint can sit under the label without dragging the box off-centre. */
+.field--optin .choice {
+  align-items: flex-start; gap: .7rem;
+  padding: .85rem 1.1rem; border-radius: var(--r);
+  font-weight: 500;
+}
+.field--optin .choice input { margin-top: .18rem; width: 1.05rem; height: 1.05rem; flex: none; }
+.field--optin .choice strong { font-weight: 800; }
+.field--optin .field__hint { display: block; margin-top: .2rem; }
+
 .form__total {
   margin: 0 0 1rem;
   font-family: var(--font-display);
@@ -1002,6 +1013,15 @@ a { color: var(--navy-soft); }
 
 @media (max-width: 620px) {
   body { font-size: 16px; }
+
+  /* Stacked, the pillars should read in the same order as the tagline above
+     them — "Academia, Industry, and Community". Side by side the original
+     order balances better, so this only applies once they are in one column.
+     Visual order only: the DOM sequence, and so the reading order for
+     assistive tech, is unchanged. These are three static cards with nothing
+     focusable, so nothing can get out of step. */
+  .pillar--industry  { order: 2; }
+  .pillar--community { order: 3; }
 
   /* Two-part brand plus a menu button is tight at 390px; shrink the lockup so
      the toggle stays on screen instead of forcing horizontal scroll. */

@@ -60,14 +60,20 @@ function setUpImportTab() {
   SpreadsheetApp.getUi().alert('Ready. Paste the PayPal CSV into "' + IMPORT_SHEET + '" starting at A1.');
 }
 
-/** Add the three tracking columns if they are not already there. */
+/**
+ * Label the tracking columns if they are not already labelled.
+ *
+ * Poster Judge (W) is written by the form, not by this file, but it sits just
+ * past the reconciliation block so its header is set here too — otherwise the
+ * column arrives with data and no name on it.
+ */
 function ensureHeaders_() {
   var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(REGISTRATION_SHEET);
   if (!sh) return;
-  var wanted = [[ 'PayPal Txn ID', 'PayPal Email', 'Match Basis' ]];
-  var have = sh.getRange(1, C_TXN, 1, 3).getValues()[0];
-  if (have[0] !== wanted[0][0]) {
-    sh.getRange(1, C_TXN, 1, 3).setValues(wanted).setFontWeight('bold');
+  var wanted = [[ 'PayPal Txn ID', 'PayPal Email', 'Match Basis', 'Poster Judge' ]];
+  var have = sh.getRange(1, C_TXN, 1, 4).getValues()[0];
+  if (have[0] !== wanted[0][0] || have[3] !== wanted[0][3]) {
+    sh.getRange(1, C_TXN, 1, 4).setValues(wanted).setFontWeight('bold');
   }
 }
 

@@ -7,7 +7,7 @@
 <meta name="description" content="Register for Steel City Chemistry, an ACS150 anniversary celebration. Saturday, October 3, 2026, William Pitt Union, University of Pittsburgh.">
 <link rel="canonical" href="https://www.steelcitychemistry.com/register.html">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css?v=202608160712">
+<link rel="stylesheet" href="styles.css?v=202608161210">
 </head>
 <body>
 
@@ -180,6 +180,18 @@
             <label for="a{{i}}-diet">Food allergies or dietary requirements?</label>
             <textarea id="a{{i}}-diet" name="a{{i}}_dietary" rows="2"></textarea>
           </p>
+
+          <!-- Opt-in rather than a required Yes/No: this is a call for volunteers,
+               and only the yeses are useful. An unchecked box sends nothing. -->
+          <p class="field field--optin">
+            <label class="choice choice--block" for="a{{i}}-judge">
+              <input type="checkbox" id="a{{i}}-judge" name="a{{i}}_poster-judge" value="Yes">
+              <span>
+                I’m interested in serving as a <strong>poster judge</strong>
+                <span class="field__hint">Judging runs 3:30 – 4:30 PM. We’ll follow up with details.</span>
+              </span>
+            </label>
+          </p>
         </fieldset>
       </template>
     </form>
@@ -209,7 +221,7 @@
   <p class="site-footer__tags">#SteelCityChemistry · #ACS150</p>
 </footer>
 
-<script src="profile.js?v=202608160712" defer></script>
-<script src="main.js?v=202608160712" defer></script>
+<script src="profile.js?v=202608161210" defer></script>
+<script src="main.js?v=202608161210" defer></script>
 </body>
 </html>

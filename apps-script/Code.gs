@@ -145,7 +145,15 @@ function handleRegistration(data) {
     row.push(i === 0 ? other : '');            // Other info: once per group.
     row.push(payer);
     row.push(String(REGISTRATION_FEE));
-    row.push('Unpaid');
+    row.push('Unpaid');                        // ...through column S.
+
+    /* Columns T, U and V belong to PayPal reconciliation and are filled in
+       later by Reconcile.gs. Writing the judge answer straight after Payment
+       Status would land it in T and be overwritten by the first CSV match, so
+       step over those three. They are legitimately blank on a new row. */
+    row.push('', '', '');
+    row.push(clean(data['a' + i + '_poster-judge']));   // column W
+
     rows.push(row);
   }
 
