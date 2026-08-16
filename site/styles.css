@@ -764,12 +764,11 @@ a { color: var(--navy-soft); }
 }
 .opp--feature { border-color: var(--gold); border-width: 2px; }
 
-/* Four sponsorship tiers, weighted by level. */
+/* Four sponsorship tiers. They share the gold border so the group reads as one
+   offer; the label colour alone carries the tier. */
 .opps--tiers { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-.opp--platinum { border-color: var(--navy); border-width: 2px; background: linear-gradient(180deg, #f6f9fc 0%, var(--white) 60%); }
-.opp--gold     { border-color: var(--gold); border-width: 2px; }
-.opp--silver   { border-color: #b9c4cd; }
-.opp--bronze   { border-color: #d3b08c; }
+.opps--tiers .opp { border-color: var(--gold); border-width: 2px; }
+.opp--platinum { background: linear-gradient(180deg, #f6f9fc 0%, var(--white) 60%); }
 .opp--platinum .opp__label { color: var(--navy); }
 .opp--gold .opp__label     { color: var(--gold-deep); }
 .opp--silver .opp__label   { color: #6b7885; }
