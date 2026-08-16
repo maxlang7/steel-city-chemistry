@@ -162,6 +162,17 @@ a { color: var(--navy-soft); }
    a leading icon needs the row axis back. */
 .btn--cal { flex-direction: row; gap: .55rem; }
 .venue__cal { margin-top: 1.4rem; }
+
+/* Contact addresses are shown as text as well as linked: mailto: silently does
+   nothing for people on webmail with no mail-client handler, and a visible
+   address can still be copied. */
+.contact-line { margin-top: 1rem; font-size: .95rem; color: var(--ink-soft); }
+.site-footer__contact {
+  margin: 1.6rem 0 0; font-size: .92rem; line-height: 1.7; color: #c6d8ea;
+}
+.site-footer__contact--center { text-align: center; }
+.site-footer__contact a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(217,165,32,.45); }
+.site-footer__contact a:hover { color: #e8b32c; }
 .btn--cal svg { width: 1.15em; height: 1.15em; flex: none; }
 .btn--gold  { background: var(--gold); color: var(--navy-deep); box-shadow: 0 4px 14px rgba(217,165,32,.32); }
 .btn--gold:hover { background: #e8b32c; }
