@@ -30,6 +30,33 @@ var POSTER_SHEET = 'Posters';
 /** Flat registration fee per attendee, in USD. Refundable upon attendance. */
 var REGISTRATION_FEE = 10;
 
+/* ---------------------------------------------------------------------------
+ * Confirmation email
+ *
+ * Sent by MailApp, which sends as whoever deployed the web app — the From
+ * address cannot be changed. REPLY_TO and SENDER_NAME are what recipients
+ * actually act on, so both point at the event, not at an individual.
+ *
+ * Quota is per day and shared with everything else that account sends:
+ * 100/day on a consumer Gmail account, 1500/day on Workspace. A send that
+ * would exceed it throws, which is why sendConfirmation is called after the
+ * row is written and never allowed to fail the request.
+ * ------------------------------------------------------------------------- */
+var SEND_CONFIRMATIONS = true;
+var SENDER_NAME   = 'Steel City Chemistry';
+var REPLY_TO      = 'steelcitychemistryacs@gmail.com';
+var EVENT_NAME    = 'Steel City Chemistry: Past, Present, and Future';
+var EVENT_DATE    = 'Saturday, October 3, 2026';
+var EVENT_TIME    = '8:00 AM - 5:00 PM';
+var EVENT_VENUE   = 'William Pitt Union, 3959 Fifth Avenue, Pittsburgh, PA 15260';
+var SITE_URL      = 'https://www.steelcitychemistry.com/';
+var DEADLINE      = 'Wednesday, September 16, 2026 at 11:59 PM Eastern';
+var GCAL_URL      = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+                    '&text=Steel%20City%20Chemistry%3A%20Past%2C%20Present%2C%20and%20Future' +
+                    '&dates=20261003T120000Z%2F20261003T210000Z' +
+                    '&location=William%20Pitt%20Union%2C%203959%20Fifth%20Avenue%2C%20Pittsburgh%2C%20PA%2015260' +
+                    '&ctz=America%2FNew_York';
+
 /** Per-attendee registration fields, in sheet column order. */
 var ATTENDEE_FIELDS = [
   'name',
@@ -119,7 +146,187 @@ function handleRegistration(data) {
   }
 
   appendRows(sheet, rows);
+
+  // After the write, never before: a mail failure must not cost us the
+  // registration. The client posts with no-cors and cannot read this response,
+  // so a thrown error here would be invisible to the registrant.
+  try {
+    sendConfirmation(data, count, groupId);
+  } catch (mailErr) {
+    console.error('Confirmation email failed for ' + groupId + ': ' + mailErr);
+  }
+
   return json({ result: 'ok', group: groupId, attendees: rows.length });
+}
+
+/**
+ * Email the group's confirmation.
+ *
+ * Goes to attendee 1 — the person who filled the form and who pays — with the
+ * other attendees copied, so everyone has the reference and the cancellation
+ * deadline in their own inbox. Addresses that do not look like addresses are
+ * dropped rather than handed to MailApp, which throws on the whole send if any
+ * single recipient is malformed.
+ */
+function sendConfirmation(data, count, groupId) {
+  if (!SEND_CONFIRMATIONS) return;
+
+  var to = clean(data['a0_email']).trim();
+  if (!isEmail(to)) return;
+
+  var people = [];
+  var cc = [];
+  for (var i = 0; i < count; i++) {
+    var nm = clean(data['a' + i + '_name']).trim();
+    if (!nm) continue;
+    var org = clean(data['a' + i + '_organization']).trim();
+    people.push(org ? (nm + ' (' + org + ')') : nm);
+
+    if (i > 0) {
+      var em = clean(data['a' + i + '_email']).trim();
+      if (isEmail(em) && em.toLowerCase() !== to.toLowerCase() && cc.indexOf(em) < 0) {
+        cc.push(em);
+      }
+    }
+  }
+  if (!people.length) return;
+
+  var total = people.length * REGISTRATION_FEE;
+  var firstName = people[0].split(' ')[0];
+
+  var lines = [];
+  lines.push('Hi ' + firstName + ',');
+  lines.push('');
+  lines.push('Thank you for registering for ' + EVENT_NAME + ', an ACS150 anniversary');
+  lines.push('celebration presented by the ACS Pittsburgh Local Section.');
+  lines.push('');
+  lines.push('YOUR REGISTRATION');
+  lines.push('Reference: ' + groupId);
+  lines.push(people.length === 1 ? 'Registered: 1 attendee' : 'Registered: ' + people.length + ' attendees');
+  for (var p = 0; p < people.length; p++) lines.push('  ' + (p + 1) + '. ' + people[p]);
+  lines.push('');
+  lines.push('EVENT DETAILS');
+  lines.push(EVENT_DATE);
+  lines.push(EVENT_TIME);
+  lines.push(EVENT_VENUE);
+  lines.push('');
+  lines.push('Add it to your calendar: ' + GCAL_URL);
+  lines.push('');
+  lines.push('REGISTRATION FEE');
+  lines.push('$' + REGISTRATION_FEE + ' per person, $' + total + ' in total.');
+  lines.push('The fee is refunded to you after you attend.');
+  lines.push('');
+  lines.push('CANCELLATION AND REFUNDS');
+  lines.push('If your plans change, tell us before the registration deadline of');
+  lines.push(DEADLINE + '.');
+  lines.push('Cancellations received before that deadline are refunded in full.');
+  lines.push('We cannot refund a cancellation received after it.');
+  lines.push('To cancel, reply to this email or write to ' + REPLY_TO + ',');
+  lines.push('quoting reference ' + groupId + '.');
+  lines.push('');
+  lines.push('Questions of any kind: ' + REPLY_TO);
+  lines.push(SITE_URL);
+  lines.push('');
+  lines.push('We look forward to seeing you in Pittsburgh.');
+  lines.push('ACS Pittsburgh Local Section');
+
+  var body = lines.join('\n');
+
+  var opts = {
+    name: SENDER_NAME,
+    replyTo: REPLY_TO,
+    htmlBody: confirmationHtml(firstName, groupId, people, total),
+    noReply: false
+  };
+  if (cc.length) opts.cc = cc.join(',');
+
+  MailApp.sendEmail(to, 'Registration confirmed - ' + EVENT_NAME, body, opts);
+}
+
+function confirmationHtml(firstName, groupId, people, total) {
+  var list = '';
+  for (var p = 0; p < people.length; p++) {
+    list += '<li>' + esc(people[p]) + '</li>';
+  }
+
+  return '' +
+  '<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#1e2a38;max-width:600px">' +
+    '<div style="background:#12305e;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0">' +
+      '<div style="font-size:20px;font-weight:700">Registration confirmed</div>' +
+      '<div style="color:#d9a520;font-size:14px;margin-top:4px">' + esc(EVENT_NAME) + '</div>' +
+    '</div>' +
+    '<div style="border:1px solid #dbe6f0;border-top:0;padding:24px;border-radius:0 0 8px 8px">' +
+      '<p>Hi ' + esc(firstName) + ',</p>' +
+      '<p>Thank you for registering for this ACS150 anniversary celebration, ' +
+        'presented by the ACS Pittsburgh Local Section.</p>' +
+
+      '<p style="background:#eaf4fb;padding:12px 16px;border-radius:6px;margin:20px 0">' +
+        '<strong>Reference:</strong> ' + esc(groupId) + '</p>' +
+
+      '<p style="margin-bottom:4px"><strong>' +
+        (people.length === 1 ? 'Attendee' : people.length + ' attendees') + '</strong></p>' +
+      '<ul style="margin-top:4px">' + list + '</ul>' +
+
+      '<p style="margin-bottom:4px"><strong>Event details</strong></p>' +
+      '<p style="margin-top:4px">' +
+        esc(EVENT_DATE) + '<br>' + esc(EVENT_TIME) + '<br>' + esc(EVENT_VENUE) +
+      '</p>' +
+      '<p><a href="' + GCAL_URL + '" style="color:#12305e;font-weight:700">Add to your Google Calendar</a></p>' +
+
+      '<p style="margin-bottom:4px"><strong>Registration fee</strong></p>' +
+      '<p style="margin-top:4px">$' + REGISTRATION_FEE + ' per person, $' + total + ' in total. ' +
+        'The fee is refunded to you after you attend.</p>' +
+
+      '<div style="background:#fdf6e3;border-left:4px solid #d9a520;padding:12px 16px;margin:20px 0">' +
+        '<strong>Cancellation and refunds</strong><br>' +
+        'If your plans change, tell us before the registration deadline of ' +
+        '<strong>' + esc(DEADLINE) + '</strong>. Cancellations received before that ' +
+        'deadline are refunded in full; we cannot refund a cancellation received after it. ' +
+        'To cancel, reply to this email quoting reference ' + esc(groupId) + '.' +
+      '</div>' +
+
+      '<p style="color:#5b6b7d;font-size:14px">' +
+        'Questions of any kind: <a href="mailto:' + REPLY_TO + '" style="color:#12305e">' + REPLY_TO + '</a><br>' +
+        '<a href="' + SITE_URL + '" style="color:#12305e">' + SITE_URL + '</a>' +
+      '</p>' +
+      '<p style="color:#5b6b7d;font-size:14px">We look forward to seeing you in Pittsburgh.<br>' +
+        'ACS Pittsburgh Local Section</p>' +
+    '</div>' +
+  '</div>';
+}
+
+/**
+ * Run this once from the Apps Script editor before updating the deployment.
+ *
+ * It does two jobs: it triggers the consent screen for the newly added
+ * script.send_mail scope (without which the live endpoint would fail on every
+ * request), and it sends a sample confirmation to whoever runs it so the
+ * wording can be checked before a real registrant sees it. Writes nothing.
+ */
+function sendTestConfirmation() {
+  var me = Session.getActiveUser().getEmail();
+  sendConfirmation({
+    'a0_name': 'Test Registrant',
+    'a0_email': me,
+    'a0_organization': 'University of Pittsburgh',
+    'a1_name': 'Second Attendee',
+    'a1_email': '',
+    'a1_organization': 'Carnegie Mellon University'
+  }, 2, 'SCC-SAMPLE');
+
+  Logger.log('Sample confirmation sent to ' + me);
+  Logger.log('Remaining mail quota today: ' + MailApp.getRemainingDailyQuota());
+}
+
+/** Deliberately permissive: reject the obviously broken, not the unusual. */
+function isEmail(s) {
+  return /^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(String(s || ''));
+}
+
+function esc(s) {
+  return String(s === undefined || s === null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function handlePoster(data) {
