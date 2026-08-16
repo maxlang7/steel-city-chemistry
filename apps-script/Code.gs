@@ -263,7 +263,24 @@ function sendMail_(to, subject, body, opts) {
   }
   delete opts.from;
   MailApp.sendEmail(to, subject, body, opts);
-  return Session.getEffectiveUser().getEmail();
+  return deployingAddress_();
+}
+
+/**
+ * Who this script sends as.
+ *
+ * Declaring oauthScopes explicitly disables Apps Script's scope auto-detection,
+ * so Session throws unless userinfo.email is listed. It is listed — but this
+ * runs on the live confirmation path, where a thrown error would mean every
+ * registrant silently stops receiving mail. Diagnostics are not worth that, so
+ * it degrades to a label instead.
+ */
+function deployingAddress_() {
+  try {
+    return Session.getEffectiveUser().getEmail() || '(unknown)';
+  } catch (err) {
+    return '(unknown - userinfo.email scope not granted)';
+  }
 }
 
 var ALIAS_CACHE_ = null;
@@ -348,7 +365,10 @@ function confirmationHtml(firstName, groupId, people, total) {
  * wording can be checked before a real registrant sees it. Writes nothing.
  */
 function sendTestConfirmation() {
-  var me = Session.getActiveUser().getEmail();
+  /* Send to the account running this. If the scope is somehow unavailable,
+     fall back to the event address so the test still delivers somewhere. */
+  var me = deployingAddress_();
+  if (me.charAt(0) === '(') me = 'steelcitychemistryacs@gmail.com';
 
   var sentAs = sendConfirmation({
     'a0_name': 'Test Registrant',
@@ -363,11 +383,14 @@ function sendTestConfirmation() {
   var lines = [
     'Sample confirmation sent to: ' + me,
     'Sent FROM: ' + sentAs,
-    (sentAs.toLowerCase() === want
-      ? 'OK - deployed from the event account, which is what registrants will see.'
-      : 'WRONG ACCOUNT. This is running as ' + sentAs + '. Open the script from ' +
-        want + ' and deploy from there, or confirmations will come from the ' +
-        'wrong address.'),
+    (sentAs.charAt(0) === '('
+      ? 'Could not read the sending account. Open the email that just arrived ' +
+        'and look at its From line - that is the answer.'
+      : sentAs.toLowerCase() === want
+        ? 'OK - running as the event account, which is what registrants will see.'
+        : 'WRONG ACCOUNT. This is running as ' + sentAs + '. Open the script from ' +
+          want + ' and deploy from there, or confirmations will come from the ' +
+          'wrong address.'),
     'Remaining mail quota today: ' + MailApp.getRemainingDailyQuota() + ' recipients'
   ];
 

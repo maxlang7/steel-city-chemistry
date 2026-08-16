@@ -279,6 +279,16 @@ a { color: var(--navy-soft); }
 }
 .hero__open span { font-size: .92rem; color: #cfe0f2; }
 
+/* Sits over the bottom of the skyline band, right-aligned the way a print
+   credit would be. Small and low-contrast: present if looked for, not
+   competing with the display type above it. */
+.hero__credit {
+  position: absolute; right: 1.2rem; bottom: 2.7rem; z-index: 2;
+  margin: 0; font-size: .68rem; letter-spacing: .04em;
+  color: rgba(255, 255, 255, .62);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+}
+
 .hero__rule {
   position: relative; z-index: 2; margin: 0;
   background: var(--gold);
@@ -864,6 +874,15 @@ a { color: var(--navy-soft); }
    a 4:1 Duquesne lockup). Constraining height and letting width follow keeps
    them optically comparable instead of sizing them by area. */
 .logo picture { display: block; }
+/* The tile is the visual object, so the link fills it and the tile itself
+   carries the hover state — a hover on just the image would look detached. */
+.logo a { display: block; }
+.logo:has(a) { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.logo:has(a:hover), .logo:has(a:focus-visible) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(18, 48, 94, .16);
+  border-color: var(--gold);
+}
 .logo img { width: auto; object-fit: contain; }
 .logos--platinum .logo img { max-height: 84px; max-width: 210px; }
 .logos--gold .logo img     { max-height: 68px; max-width: 170px; }
