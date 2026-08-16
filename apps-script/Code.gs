@@ -33,15 +33,16 @@ var REGISTRATION_FEE = 10;
 /* ---------------------------------------------------------------------------
  * Confirmation email
  *
- * Sent from FROM_ALIAS when that address is a verified "Send mail as" alias on
- * the deploying account, and from the deploying account itself otherwise.
+ * MailApp sends as whoever deployed the web app, so this project is deployed
+ * from steelcitychemistryacs@gmail.com and the From address is simply that
+ * account. No alias is involved.
  *
- * The fallback is deliberate. Gmail will not let a script send as an address
- * the account has not proven it controls, and that verification is a manual
- * step (Gmail > Settings > Accounts > Send mail as). Rather than fail closed
- * and lose confirmations, an unverified alias just means the mail goes out
- * under the deploying account's address with the right name and reply-to. Once
- * the alias is verified the switch happens on its own, with no code change.
+ * The alias route was tried first and is a dead end here: langhorst.com is a
+ * Workspace domain, and Workspace blocks "send mail as" an external gmail.com
+ * address unless per-user outbound gateways are enabled and an app password is
+ * configured. Deploying from the account that owns the identity avoids the
+ * whole problem. FROM_ALIAS is left in place, empty, for the case where a
+ * future deployer does hold a verified alias.
  *
  * Quota is per day and shared with everything else that account sends:
  * 100/day on a consumer Gmail account, 1500/day on Workspace. A send that
@@ -51,7 +52,7 @@ var REGISTRATION_FEE = 10;
 var SEND_CONFIRMATIONS = true;
 var SENDER_NAME   = 'Steel City Chemistry';
 var REPLY_TO      = 'steelcitychemistryacs@gmail.com';
-var FROM_ALIAS    = 'steelcitychemistryacs@gmail.com';
+var FROM_ALIAS    = '';   // empty: send as the deploying account
 var EVENT_NAME    = 'Steel City Chemistry: Past, Present, and Future';
 var EVENT_DATE    = 'Saturday, October 3, 2026';
 var EVENT_TIME    = '8:00 AM - 5:00 PM';
@@ -358,20 +359,16 @@ function sendTestConfirmation() {
     'a1_organization': 'Carnegie Mellon University'
   }, 2, 'SCC-SAMPLE');
 
+  var want = 'steelcitychemistryacs@gmail.com';
   var lines = [
     'Sample confirmation sent to: ' + me,
     'Sent FROM: ' + sentAs,
-    'Wanted FROM: ' + FROM_ALIAS,
-    (sentAs === FROM_ALIAS
-      ? 'OK — the alias is verified and in use.'
-      : 'NOT using the alias yet. Add ' + FROM_ALIAS + ' under Gmail > Settings > ' +
-        'Accounts and Import > Send mail as, confirm the code it emails you, then ' +
-        're-run this. No code change needed.'),
-    'Aliases visible on this account: ' + (function () {
-      try { return GmailApp.getAliases().join(', ') || '(none)'; }
-      catch (e) { return '(could not read: ' + e + ')'; }
-    })(),
-    'Remaining mail quota today: ' + MailApp.getRemainingDailyQuota()
+    (sentAs.toLowerCase() === want
+      ? 'OK - deployed from the event account, which is what registrants will see.'
+      : 'WRONG ACCOUNT. This is running as ' + sentAs + '. Open the script from ' +
+        want + ' and deploy from there, or confirmations will come from the ' +
+        'wrong address.'),
+    'Remaining mail quota today: ' + MailApp.getRemainingDailyQuota() + ' recipients'
   ];
 
   Logger.log(lines.join('\n'));
