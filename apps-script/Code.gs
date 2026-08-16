@@ -33,9 +33,15 @@ var REGISTRATION_FEE = 10;
 /* ---------------------------------------------------------------------------
  * Confirmation email
  *
- * Sent by MailApp, which sends as whoever deployed the web app — the From
- * address cannot be changed. REPLY_TO and SENDER_NAME are what recipients
- * actually act on, so both point at the event, not at an individual.
+ * Sent from FROM_ALIAS when that address is a verified "Send mail as" alias on
+ * the deploying account, and from the deploying account itself otherwise.
+ *
+ * The fallback is deliberate. Gmail will not let a script send as an address
+ * the account has not proven it controls, and that verification is a manual
+ * step (Gmail > Settings > Accounts > Send mail as). Rather than fail closed
+ * and lose confirmations, an unverified alias just means the mail goes out
+ * under the deploying account's address with the right name and reply-to. Once
+ * the alias is verified the switch happens on its own, with no code change.
  *
  * Quota is per day and shared with everything else that account sends:
  * 100/day on a consumer Gmail account, 1500/day on Workspace. A send that
@@ -45,6 +51,7 @@ var REGISTRATION_FEE = 10;
 var SEND_CONFIRMATIONS = true;
 var SENDER_NAME   = 'Steel City Chemistry';
 var REPLY_TO      = 'steelcitychemistryacs@gmail.com';
+var FROM_ALIAS    = 'steelcitychemistryacs@gmail.com';
 var EVENT_NAME    = 'Steel City Chemistry: Past, Present, and Future';
 var EVENT_DATE    = 'Saturday, October 3, 2026';
 var EVENT_TIME    = '8:00 AM - 5:00 PM';
@@ -235,12 +242,48 @@ function sendConfirmation(data, count, groupId) {
   var opts = {
     name: SENDER_NAME,
     replyTo: REPLY_TO,
-    htmlBody: confirmationHtml(firstName, groupId, people, total),
-    noReply: false
+    htmlBody: confirmationHtml(firstName, groupId, people, total)
   };
   if (cc.length) opts.cc = cc.join(',');
 
-  MailApp.sendEmail(to, 'Registration confirmed - ' + EVENT_NAME, body, opts);
+  return sendMail_(to, 'Registration confirmed - ' + EVENT_NAME, body, opts);
+}
+
+/**
+ * Send as the event address when we are allowed to, as the deploying account
+ * when we are not. Returns the address the mail actually went out as, which is
+ * the only way to tell the two paths apart after the fact.
+ */
+function sendMail_(to, subject, body, opts) {
+  if (FROM_ALIAS && hasAlias_(FROM_ALIAS)) {
+    opts.from = FROM_ALIAS;
+    GmailApp.sendEmail(to, subject, body, opts);
+    return FROM_ALIAS;
+  }
+  delete opts.from;
+  MailApp.sendEmail(to, subject, body, opts);
+  return Session.getEffectiveUser().getEmail();
+}
+
+var ALIAS_CACHE_ = null;
+
+/**
+ * Aliases change about never, and getAliases costs an API call per send, so it
+ * is fetched once per execution. A failure here is not fatal: it just means we
+ * take the MailApp path.
+ */
+function hasAlias_(addr) {
+  try {
+    if (ALIAS_CACHE_ === null) {
+      ALIAS_CACHE_ = GmailApp.getAliases().map(function (a) {
+        return String(a).trim().toLowerCase();
+      });
+    }
+    return ALIAS_CACHE_.indexOf(String(addr).trim().toLowerCase()) >= 0;
+  } catch (err) {
+    console.warn('Could not read Gmail aliases, sending as the deploying account: ' + err);
+    return false;
+  }
 }
 
 function confirmationHtml(firstName, groupId, people, total) {
@@ -305,7 +348,8 @@ function confirmationHtml(firstName, groupId, people, total) {
  */
 function sendTestConfirmation() {
   var me = Session.getActiveUser().getEmail();
-  sendConfirmation({
+
+  var sentAs = sendConfirmation({
     'a0_name': 'Test Registrant',
     'a0_email': me,
     'a0_organization': 'University of Pittsburgh',
@@ -314,8 +358,24 @@ function sendTestConfirmation() {
     'a1_organization': 'Carnegie Mellon University'
   }, 2, 'SCC-SAMPLE');
 
-  Logger.log('Sample confirmation sent to ' + me);
-  Logger.log('Remaining mail quota today: ' + MailApp.getRemainingDailyQuota());
+  var lines = [
+    'Sample confirmation sent to: ' + me,
+    'Sent FROM: ' + sentAs,
+    'Wanted FROM: ' + FROM_ALIAS,
+    (sentAs === FROM_ALIAS
+      ? 'OK — the alias is verified and in use.'
+      : 'NOT using the alias yet. Add ' + FROM_ALIAS + ' under Gmail > Settings > ' +
+        'Accounts and Import > Send mail as, confirm the code it emails you, then ' +
+        're-run this. No code change needed.'),
+    'Aliases visible on this account: ' + (function () {
+      try { return GmailApp.getAliases().join(', ') || '(none)'; }
+      catch (e) { return '(could not read: ' + e + ')'; }
+    })(),
+    'Remaining mail quota today: ' + MailApp.getRemainingDailyQuota()
+  ];
+
+  Logger.log(lines.join('\n'));
+  return lines.join('\n');
 }
 
 /** Deliberately permissive: reject the obviously broken, not the unusual. */
