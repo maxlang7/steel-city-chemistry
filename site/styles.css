@@ -158,6 +158,11 @@ a { color: var(--navy-soft); }
   transition: transform .12s ease, background-color .15s ease, box-shadow .15s ease;
 }
 .btn:hover { transform: translateY(-2px); }
+/* .btn stacks its children so .btn__note can sit under the label; a button with
+   a leading icon needs the row axis back. */
+.btn--cal { flex-direction: row; gap: .55rem; }
+.venue__cal { margin-top: 1.4rem; }
+.btn--cal svg { width: 1.15em; height: 1.15em; flex: none; }
 .btn--gold  { background: var(--gold); color: var(--navy-deep); box-shadow: 0 4px 14px rgba(217,165,32,.32); }
 .btn--gold:hover { background: #e8b32c; }
 .btn--navy  { background: var(--navy); color: #fff; }
