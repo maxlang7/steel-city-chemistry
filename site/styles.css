@@ -835,6 +835,7 @@ a { color: var(--navy-soft); }
 
 .tier__label--silver { color: #6b7885; }
 .tier__label--bronze { color: #9a6b3f; }
+.logos--silver .logo { min-width: 175px; min-height: 92px; }
 .logos--bronze .logo { min-width: 150px; min-height: 76px; }
 .logos--bronze .logo span { font-size: .92rem; }
 .logo--empty {
