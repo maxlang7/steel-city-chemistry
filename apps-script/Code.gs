@@ -27,8 +27,10 @@
 var REGISTRATION_SHEET = 'Registrations';
 var POSTER_SHEET = 'Posters';
 
-/** Flat registration fee per attendee, in USD. Refundable upon attendance. */
-var REGISTRATION_FEE = 10;
+/** Registration is free. The $10 refundable deposit was dropped on 2026-09-02
+ *  when the PayPal flow was removed. Left at 0 rather than deleted so the
+ *  'Amount Due' column keeps its position and Reconcile.gs still lines up. */
+var REGISTRATION_FEE = 0;
 
 /* ---------------------------------------------------------------------------
  * Confirmation email
@@ -228,15 +230,9 @@ function sendConfirmation(data, count, groupId) {
   lines.push('');
   lines.push('Add it to your calendar: ' + GCAL_URL);
   lines.push('');
-  lines.push('REGISTRATION FEE');
-  lines.push('$' + REGISTRATION_FEE + ' per person, $' + total + ' in total.');
-  lines.push('The fee is refunded to you after you attend.');
-  lines.push('');
-  lines.push('CANCELLATION AND REFUNDS');
-  lines.push('If your plans change, tell us before the registration deadline of');
-  lines.push(DEADLINE + '.');
-  lines.push('Cancellations received before that deadline are refunded in full.');
-  lines.push('We cannot refund a cancellation received after it.');
+  lines.push('CANCELLATION');
+  lines.push('Registration is free. If your plans change, please tell us as soon as');
+  lines.push('you can, so we can free your place and plan catering accurately.');
   lines.push('To cancel, reply to this email or write to ' + REPLY_TO + ',');
   lines.push('quoting reference ' + groupId + '.');
   lines.push('');
@@ -342,15 +338,10 @@ function confirmationHtml(firstName, groupId, people, total) {
       '</p>' +
       '<p><a href="' + GCAL_URL + '" style="color:#12305e;font-weight:700">Add to your Google Calendar</a></p>' +
 
-      '<p style="margin-bottom:4px"><strong>Registration fee</strong></p>' +
-      '<p style="margin-top:4px">$' + REGISTRATION_FEE + ' per person, $' + total + ' in total. ' +
-        'The fee is refunded to you after you attend.</p>' +
-
       '<div style="background:#fdf6e3;border-left:4px solid #d9a520;padding:12px 16px;margin:20px 0">' +
-        '<strong>Cancellation and refunds</strong><br>' +
-        'If your plans change, tell us before the registration deadline of ' +
-        '<strong>' + esc(DEADLINE) + '</strong>. Cancellations received before that ' +
-        'deadline are refunded in full; we cannot refund a cancellation received after it. ' +
+        '<strong>Cancellation</strong><br>' +
+        'Registration is free. If your plans change, please tell us as soon as you ' +
+        'can, so we can free your place and plan catering accurately. ' +
         'To cancel, reply to this email quoting reference ' + esc(groupId) + '.' +
       '</div>' +
 

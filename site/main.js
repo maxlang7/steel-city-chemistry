@@ -67,9 +67,10 @@
      than pretending to succeed and dropping someone's registration. */
   var ENDPOINT = 'https://script.google.com/macros/s/AKfycbwrkFTDmgnfayN0bySO9RkM-AvvN9EK2xHB-PzK7mMKMaCpi2drPYNk3XuykGpb80gk6Q/exec';
 
-  /* Flat fee per attendee, in USD, refundable upon attendance. Keep in step
-     with REGISTRATION_FEE in apps-script/Code.gs and FEE in payment.js. */
-  var FEE = 10;
+  /* Registration is free. The $10 refundable deposit and its PayPal flow were
+     removed on 2026-09-02. With FEE at 0 the form reports a head count instead
+     of a dollar total; set it back only alongside a working payment path. */
+  var FEE = 0;
 
   var regForm = document.getElementById('registrationForm');
   var status = document.getElementById('formStatus');
@@ -292,7 +293,7 @@
 
       /* The group id is generated here, not server-side: the request is sent
          no-cors so the response body is unreadable, and the confirmation page
-         needs the id to show the registrant and to tag the PayPal payment. */
+         needs the id to show the registrant their reference code. */
       var count = attendeeCount();
       var groupId = 'SCC-' +
         Date.now().toString(36).toUpperCase().slice(-5) +
