@@ -4,9 +4,8 @@
  * Handles two forms, distinguished by the `form` parameter:
  *
  *   form=registration → one row per attendee on the "Registrations" sheet.
- *     A submission may cover several people; every row shares a Group ID and
- *     names the same payer, so a single PayPal payment reconciles against the
- *     group while catering detail stays per person.
+ *     A submission may cover several people; every row shares a Group ID, so
+ *     the group stays identifiable while catering detail stays per person.
  *
  *   form=poster → one row on the "Posters" sheet per abstract submitted.
  *
@@ -180,11 +179,10 @@ function handleRegistration(data) {
 /**
  * Email the group's confirmation.
  *
- * Goes to attendee 1 — the person who filled the form and who pays — with the
- * other attendees copied, so everyone has the reference and the cancellation
- * deadline in their own inbox. Addresses that do not look like addresses are
- * dropped rather than handed to MailApp, which throws on the whole send if any
- * single recipient is malformed.
+ * Goes to attendee 1 — the person who filled the form — with the other
+ * attendees copied, so everyone has the reference in their own inbox.
+ * Addresses that do not look like addresses are dropped rather than handed to
+ * MailApp, which throws on the whole send if any single recipient is malformed.
  */
 function sendConfirmation(data, count, groupId) {
   if (!SEND_CONFIRMATIONS) return;
@@ -209,7 +207,6 @@ function sendConfirmation(data, count, groupId) {
   }
   if (!people.length) return;
 
-  var total = people.length * REGISTRATION_FEE;
   var firstName = people[0].split(' ')[0];
 
   var lines = [];
@@ -231,8 +228,8 @@ function sendConfirmation(data, count, groupId) {
   lines.push('Add it to your calendar: ' + GCAL_URL);
   lines.push('');
   lines.push('CANCELLATION');
-  lines.push('Registration is free. If your plans change, please tell us as soon as');
-  lines.push('you can, so we can free your place and plan catering accurately.');
+  lines.push('If your plans change, please tell us as soon as you can, so we can');
+  lines.push('free your place and plan catering accurately.');
   lines.push('To cancel, reply to this email or write to ' + REPLY_TO + ',');
   lines.push('quoting reference ' + groupId + '.');
   lines.push('');
@@ -247,7 +244,7 @@ function sendConfirmation(data, count, groupId) {
   var opts = {
     name: SENDER_NAME,
     replyTo: REPLY_TO,
-    htmlBody: confirmationHtml(firstName, groupId, people, total)
+    htmlBody: confirmationHtml(firstName, groupId, people)
   };
   if (cc.length) opts.cc = cc.join(',');
 
@@ -308,7 +305,7 @@ function hasAlias_(addr) {
   }
 }
 
-function confirmationHtml(firstName, groupId, people, total) {
+function confirmationHtml(firstName, groupId, people) {
   var list = '';
   for (var p = 0; p < people.length; p++) {
     list += '<li>' + esc(people[p]) + '</li>';
@@ -340,8 +337,8 @@ function confirmationHtml(firstName, groupId, people, total) {
 
       '<div style="background:#fdf6e3;border-left:4px solid #d9a520;padding:12px 16px;margin:20px 0">' +
         '<strong>Cancellation</strong><br>' +
-        'Registration is free. If your plans change, please tell us as soon as you ' +
-        'can, so we can free your place and plan catering accurately. ' +
+        'If your plans change, please tell us as soon as you can, so we can free ' +
+        'your place and plan catering accurately. ' +
         'To cancel, reply to this email quoting reference ' + esc(groupId) + '.' +
       '</div>' +
 
