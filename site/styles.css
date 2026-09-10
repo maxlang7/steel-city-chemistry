@@ -1073,3 +1073,9 @@ a { color: var(--navy-soft); }
   .hero__title, .finalcta h2, .awards .h-sub { color: #000 !important; }
   .person, .card, .opp, .highlight { break-inside: avoid; }
 }
+
+/* Organizers split into Event Co-Chairs and the wider Organizing Committee.
+   Eleven cards in one flat grid buried the co-chairs; the labels restore the
+   hierarchy without a second grid style. */
+.organizers__group { margin-top: 2.8rem; margin-bottom: 1.1rem; }
+.organizers__group--first { margin-top: 1.8rem; }
