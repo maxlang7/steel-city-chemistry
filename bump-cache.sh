@@ -22,6 +22,12 @@ for f in *.html; do
   # too — in both src and srcset, since <picture> serves the webp to most
   # browsers and an unstamped srcset would win over a stamped src.
   sed -i -E "s#((src|srcset)=\"assets/img/hero-(1536|1100|760)\.(jpg|webp))(\?v=[0-9]+)?\"#\1?v=$V\"#g" "$f"
+
+  # Head-shots and sponsor logos keep stable filenames too, and are served with
+  # the same day-long lifetime. Replacing a photo under an existing name would
+  # otherwise keep showing the old one for up to 24 hours — which is exactly
+  # what happened when a placeholder avatar was swapped for a real headshot.
+  sed -i -E "s#((src|srcset)=\"assets/(organizers|speakers|sponsors)/[A-Za-z0-9_-]+\.(jpg|png|webp))(\?v=[0-9]+)?\"#\1?v=$V\"#g" "$f"
 done
 
 echo "cache version stamped: $V"
