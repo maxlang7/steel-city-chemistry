@@ -23,6 +23,17 @@
  *   - MAX_ATTENDEES caps how much one request can write.
  */
 
+/** Registration and the call for abstracts closed on 2026-09-16 at 11:59 PM
+ *  Eastern; this flag was flipped on 2026-09-25. A hard flag, not a date
+ *  comparison, so reopening is a deliberate edit rather than a timezone
+ *  accident. The endpoint stays deployed: a late POST gets a clear answer
+ *  instead of a silent failure, and nothing is written to either sheet. */
+var SUBMISSIONS_CLOSED = true;
+var CLOSED_MESSAGE =
+  'Registration and poster abstracts closed on September 16, 2026. ' +
+  'The event itself is still open to the public and free to attend \u2014 ' +
+  'email steelcitychemistryacs@gmail.com with any questions.';
+
 var REGISTRATION_SHEET = 'Registrations';
 var POSTER_SHEET = 'Posters';
 
@@ -107,6 +118,10 @@ function doPost(e) {
     // Honeypot: bots fill hidden fields, humans never see them.
     if (data['company-website']) {
       return json({ result: 'ok' });   // Silently accept, do not record.
+    }
+
+    if (SUBMISSIONS_CLOSED) {
+      return json({ result: 'error', message: CLOSED_MESSAGE });
     }
 
     return (data.form === 'poster') ? handlePoster(data) : handleRegistration(data);

@@ -1079,3 +1079,14 @@ a { color: var(--navy-soft); }
    hierarchy without a second grid style. */
 .organizers__group { margin-top: 2.8rem; margin-bottom: 1.1rem; }
 .organizers__group--first { margin-top: 1.8rem; }
+
+/* ---------- closed submissions (registration + abstracts, Sept 16 2026) ---------- */
+.note--closed {
+  border-left-color: var(--navy); color: var(--ink);
+  font-size: 1rem; background: var(--sky-pale);
+  padding: .7rem .9rem; border-radius: 0 6px 6px 0;
+}
+.note--tight { margin-bottom: 0; }
+.closed__actions {
+  display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2rem;
+}
